@@ -12,7 +12,7 @@ def main():
     
     # open file and parse data:
     parser: ConfigParser = ConfigParser(sys.argv[1])
-    config_data: Dict[str, str] = parser.read_config()
+    config_data: Dict[str, str] | None = parser.read_config()
     if not config_data:
         exit(1)
 

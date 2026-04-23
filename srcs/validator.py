@@ -7,7 +7,7 @@ class ConfigParser():
     def __init__(self, config_file: str) -> None:
         self.config_file = config_file
 
-    def read_config(self) -> Dict[str, str]:
+    def read_config(self) -> Dict[str, str] | None:
         """Tries to open the config file and returns Key=Value pairs as a Dict"""
         
         config_data: Dict[str, str] = {}
@@ -36,6 +36,7 @@ class ConfigParser():
             print(f"Error: an error ocurred while opening config file '{self.config_file}'")
         except SyntaxError as e:
             print(f"Error: {e} - Values must be in 'KEY=VALUE' format")
+        return None
 
 
 class Validator():
