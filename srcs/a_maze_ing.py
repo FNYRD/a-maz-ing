@@ -33,7 +33,10 @@ def read_config(config_file: str) -> Dict[str, str]:
         print(f"Error: {e} - Values must be in 'KEY=VALUE' format")
 
 
-def parse_coordinates(coord_str: str) -> Tuple[int, int]:
+def parse_coords(coord_str: str) -> Tuple[int, int]:
+    """Gets (x,y) coordinates as a string, validates the format,
+    and returns them as a tuple"""
+
     values: List[str] = coord_str.split(',')
     if len(values) != 2:
         raise SyntaxError("coordinates should be in 'KEY=x,y' format")
@@ -69,25 +72,31 @@ def validate_config(input_data: Dict[str, str]) -> Dict[str, Any]:
         raise ValueError(f"Wrong 'HEIGHT' value ({e})")
 
     # check if entry and exit coordinates are valid and parse them into a tuple
-    try:
-        output_data["ENTRY"] = parse_coordinates(input_data["ENTRY"])
-        x, y = output_data["ENTRY"]
-        if x < 0 or x > output_data["WIDTH"]:
-            raise ValueError(f"X value out of bounds: '{x}'")
-        if y < 0 or y > output_data["HEIGHT"]:
-            raise ValueError(f"Y value out of bounds: '{y}'")
-    except (ValueError, SyntaxError) as e:
-        raise ValueError(f"Wrong value for ENTRY coordinates ({e})")
-    try:
-        output_data["EXIT"] = parse_coordinates(input_data["EXIT"])
-        x, y = output_data["EXIT"]
-        if x < 0 or x > output_data["WIDTH"]:
-            raise ValueError(f"X value out of bounds: '{x}'")
-        if y < 0 or y > output_data["HEIGHT"]:
-            raise ValueError(f"Y value out of bounds: '{y}'")
-    except ValueError as e:
-        raise ValueError(f"Wrong value for EXIT coordinates ({e})")
+    for key in required[2:4]:
+        try:
+            output_data[key]: Tuple[int, int] = parse_coords(input_data[key])
+            x, y = output_data[key]
+            if x < 0 or x > output_data["WIDTH"]:
+                raise ValueError(f"X value out of bounds: '{x}'")
+            if y < 0 or y > output_data["HEIGHT"]:
+                raise ValueError(f"Y value out of bounds: '{y}'")
+        except (ValueError, SyntaxError) as e:
+            raise ValueError(f"Wrong value for {key} coordinates ({e})")
 
+    # checks that output filename is valid:
+    output_data["OUTPUT_FILE"] = input_data["OUTPUT_FILE"]
+    if not output_data["OUTPUT_FILE"]:
+        raise ValueError(f"Output filename is empty!")
+    if len(output_data["OUTPUT_FILE"]) > 100:
+        raise ValueError(f"Wrong output filename (too long!)")
+
+    # check for valid boolen values for PERFECT key:
+    if input_data["PERFECT"].upper() == "TRUE":
+        output_data["PERFECT"]: bool = True
+    elif input_data["PERFECT"].upper() == "FALSE":
+        output_data["PERFECT"]: bool = False
+    else:
+        raise ValueError("PERFECT only accepts boolean values (TRUE/FALSE)")
 
 
 if __name__ == "__main__":
