@@ -1,4 +1,4 @@
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Tuple, List
 
 
 class ConfigParser():
@@ -23,6 +23,7 @@ class ConfigParser():
                         key, value = line.split("=", 1)
                         
                         # are we accepting spaces??????????????????????????????
+                        # RE: we are, we're avoiding it with your .strip btw
                         config_data[key.strip()] = value.strip()
                     else:
                         raise SyntaxError(f"wrong syntax in line [{line_num}]")
@@ -53,7 +54,7 @@ class Validator():
             values: List[str] = coord_str.split(',')
             if len(values) != 2:
                 raise SyntaxError("coordinates should be in 'KEY=x,y' format")
-            return tuple((int(values[0]), int(values[1])))
+            return ((int(values[0]), int(values[1])))
 
         required: List[str] = ["WIDTH", "HEIGHT", "ENTRY",
                                "EXIT", "OUTPUT_FILE", "PERFECT"]
@@ -83,7 +84,7 @@ class Validator():
         # check if entry and exit coordinates are valid and parse them into a tuple
         for key in required[2:4]:
             try:
-                output_data[key]: Tuple[int, int] = parse_coords(input_data[key])
+                output_data[key] = parse_coords(input_data[key])
                 x, y = output_data[key]
                 if x < 0 or x > output_data["WIDTH"]:
                     raise ValueError(f"X value out of bounds: '{x}'")
@@ -101,9 +102,9 @@ class Validator():
 
         # check for valid boolen values for PERFECT key:
         if input_data["PERFECT"].upper() == "TRUE":
-            output_data["PERFECT"]: bool = True
+            output_data["PERFECT"] = True
         elif input_data["PERFECT"].upper() == "FALSE":
-            output_data["PERFECT"]: bool = False
+            output_data["PERFECT"] = False
         else:
             raise ValueError("PERFECT only accepts boolean values (TRUE/FALSE)")
 
