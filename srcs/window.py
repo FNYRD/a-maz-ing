@@ -54,10 +54,17 @@ class Window():
     def render(self, maze: str) -> None:
         
         def mykey(keynum: int, stuff: Any):
+            """Captures key release events"""
             # 'q' to exit
             if keynum == 113:
                 self._m.mlx_destroy_window(self._ptr, self._win)
                 self._m.mlx_release(self._ptr)
+
+        def close_window(stuff: Any):
+            """Captures ClientMessage events (WM_DELETE_WINDOW)"""
+            print(stuff)
+            self._m.mlx_destroy_window(self._ptr, self._win)
+            self._m.mlx_release(self._ptr)
 
         rows: List[str] = maze.strip("\n").split("\n")
         width = len(rows[0])
@@ -65,14 +72,17 @@ class Window():
 
         # Create window with maze size:
         self._win = self._m.mlx_new_window(self._ptr, 20 * width + 2 * self.margin,
-                20 * height + 2 * self.margin, "A_Maze_ing!")
+                20 * height + 2 * self.margin, "A_Maze_Ing!")
         self._m.mlx_clear_window(self._ptr, self._win)
        
         self.paint_bg(width, height)
         for x in range(0, width):
             for y in range(0, height):
-                self.draw_cell(20 * x + self.margin - 1, 20 * y + self.margin -1, rows[y][x])
-
+                self.draw_cell(20 * x + self.margin - 1, 20 * y + self.margin - 1,
+                        rows[y][x])
+        
+        # Set hooks to capture events:
+        self._m.mlx_hook(self._win, 33, 0, close_window, ["close window"])
         self._m.mlx_key_hook(self._win, mykey, [])
         self._m.mlx_loop(self._ptr)
 
