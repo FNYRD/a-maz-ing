@@ -22,6 +22,7 @@ def main():
     except (KeyError, ValueError) as e:
         print("Configuration Error:", e)
         exit(1)
+    manager.show_maze()
 
 
 if __name__ == "__main__":
