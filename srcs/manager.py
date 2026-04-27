@@ -1,5 +1,5 @@
 from typing import Dict, Any
-from .window import Window
+from .window import MazeWindow
 
 
 class MazeManager():
@@ -36,5 +36,5 @@ A8442C6C2C1168552C16A9542
 86956951692C1455416928552
 C545545456C54555545444556
 """
-        window = Window()
+        window = MazeWindow()
         window.render(maze)
