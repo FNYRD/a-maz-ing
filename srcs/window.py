@@ -84,13 +84,24 @@ class MazeWindow():
                 elif value == "F":
                     self._m.mlx_pixel_put(
                             self._ptr, self._win, x + x_offset, y + y_offset, self.hl_color)
-#                else:
-#                    self._m.mlx_pixel_put(
-#                            self._ptr, self._win, x + x_offset, y + y_offset, self.bg_color)
-#                if x == 6 and y == 0:
-#                    self._m.mlx_string_put(
-#                            self._ptr, self._win, x + x_offset, y + y_offset,
-#                            self.fg_color, value)
+
+    def draw_instructions(self, width: int, height: int) -> None:
+        """Prints the instructions for user interaction, distributing them
+        accordingly to the maze/window size"""
+        
+        #print(width * self.cell_size)
+        instructions: str = "(c) color | (s) solution | (f) pattern | (q) quit"
+        space = width * self.cell_size
+        length = len(instructions) * 10 + 10
+        #print(space - length)
+        
+        # check if there is enough to show instructions in line:
+        if space >=  length:
+            self._m.mlx_string_put(
+                    self._ptr, self._win,
+                    self.margin + self.wall_size + (space - length) // 2,
+                    height * self.cell_size + self.margin + self.wall_size + 10,
+                    0xffcccccc, instructions)
 
     def render(self, maze: Maze) -> None:
         """Receives the maze data and creates a window to draw it"""
@@ -132,7 +143,7 @@ class MazeWindow():
         # Creating window with maze size:
         self._win = self._m.mlx_new_window(self._ptr,
                 self.cell_size * maze.width + 2 * self.margin + self.wall_size,
-                self.cell_size * maze.height + 2 * self.margin + self.wall_size,
+                self.cell_size * maze.height + 2 * self.margin + self.wall_size + 30,
                 "A_Maze_Ing!")
         self._m.mlx_clear_window(self._ptr, self._win)
       
@@ -144,6 +155,9 @@ class MazeWindow():
         self.draw_single_block(maze.start, 0xff00ff00)
         self.draw_single_block(maze.exit, 0xffff0000)
         self.draw_path(maze.start, maze.path, 0xff888888)
+
+        # Write instructions for user interaction:
+        self.draw_instructions(maze.width, maze.height)
         
         # Set hooks to capture events:
         self._m.mlx_hook(self._win, 33, 0, close_window, ["close window"])
