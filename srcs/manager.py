@@ -1,5 +1,6 @@
 from typing import Dict, Any
 from .window import MazeWindow
+from .maze import Maze
 
 
 class MazeManager():
@@ -14,8 +15,8 @@ class MazeManager():
         pass
 
     def show_maze(self) -> None:
-        maze = """
-9515391539551795151151153
+        maze = Maze(
+"""9515391539551795151151153
 EBABAE812853C1412BA812812
 96A8416A84545412AC4282C2A
 C3A83816A9395384453A82D02
@@ -34,7 +35,10 @@ C416928513C443A828456C3BA
 A81292AA814682C6A8693C6AA
 A8442C6C2C1168552C16A9542
 86956951692C1455416928552
-C545545456C54555545444556
-"""
+C545545456C54555545444556""",
+        (1,1),
+        (19, 14),
+        "SWSESWSESWSSSEESEEENEESESEESSSEEESSSEEENNENEE")
+
         window = MazeWindow()
         window.render(maze)
