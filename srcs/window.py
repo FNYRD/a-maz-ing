@@ -19,7 +19,7 @@ class MazeWindow():
         self.cell_size: int = 20
         self.wall_size: int = 4
         self.path_visible = True
-        self.maze: Maze = Maze(
+        self.maze: Maze = Maze([[int('0x' + value, 16) for value in row] for row in
 """9515391539551795151151153
 EBABAE812853C1412BA812812
 96A8416A84545412AC4282C2A
@@ -39,9 +39,11 @@ C416928513C443A828456C3BA
 A81292AA814682C6A8693C6AA
 A8442C6C2C1168552C16A9542
 86956951692C1455416928552
-C545545456C54555545444556""",
-        (1,1),
-        (19, 14),
+C545545456C54555545444556""".strip("\n").split("\n")],
+        config["width"],
+        config["height"],
+        config["entry"],
+        config["exit"],
         "SWSESWSESWSSSEESEEENEESESEESSSEEESSSEEENNENEE")
     
     def paint_bg(self, width: int, height: int):
@@ -87,11 +89,10 @@ C545545456C54555545444556""",
                 x -= 1
             self.draw_single_block((x, y), color)
 
-    def draw_cell(self, x_offset: int, y_offset: int, value: str) -> None:
+    def draw_cell(self, x_offset: int, y_offset: int, code: int) -> None:
         """Recieves a position to draw a cell and a hex value coding for
         open and closed walls"""    
 
-        code = int('0x' + value, 16)
         for x in range(0, self.cell_size + self.wall_size - 1):
             for y in range(0, self.cell_size + self.wall_size - 1):
                 if y < self.wall_size and code & 0b0001:
@@ -106,7 +107,7 @@ C545545456C54555545444556""",
                 elif x < self.wall_size and code & 0b1000:
                     self._m.mlx_pixel_put(
                         self._ptr, self._win, x + x_offset, y + y_offset, self.fg_color)
-                elif value == "F":
+                elif code == 0xF:
                     self._m.mlx_pixel_put(
                             self._ptr, self._win, x + x_offset, y + y_offset, self.hl_color)
 
@@ -158,6 +159,11 @@ C545545456C54555545444556""",
             if keynum == 102:
                 self.hl_color = Color.get_random_color()
                 self.draw_maze(maze.width, maze.height, maze.rows)
+
+            # 'g' to regenerate:
+            if keynum == 103: #                             Connection w/ MazeGenerator!!!
+                self.maze.rows = self._generator.show() #  <-----------------------
+                self.draw_maze(self.maze.width, self.maze.height, self.maze.rows)
 
         def close_window(stuff: Any):
             """Captures ClientMessage events (WM_DELETE_WINDOW)"""
