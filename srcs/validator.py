@@ -67,16 +67,16 @@ class Validator():
         
         # check if width is valid:
         try:
-            output_data["WIDTH"] = int(input_data["WIDTH"])
-            if output_data["WIDTH"] < 2:
+            output_data["width"] = int(input_data["WIDTH"])
+            if output_data["width"] < 2:
                 raise ValueError("Minimal 'WIDTH' value: 2")
         except ValueError as e:
             raise ValueError(f"Wrong 'WIDTH' value ({e})")
 
         # check if height is valid:
         try:
-            output_data["HEIGHT"] = int(input_data["HEIGHT"])
-            if output_data["HEIGHT"] < 2:
+            output_data["height"] = int(input_data["HEIGHT"])
+            if output_data["height"] < 2:
                 raise ValueError("Minimal 'HEIGHT' value: 2")
         except ValueError as e:
             raise ValueError(f"Wrong 'HEIGHT' value ({e})")
@@ -84,27 +84,27 @@ class Validator():
         # check if entry and exit coordinates are valid and parse them into a tuple
         for key in required[2:4]:
             try:
-                output_data[key] = parse_coords(input_data[key])
-                x, y = output_data[key]
-                if x < 0 or x > output_data["WIDTH"]:
+                output_data[key.lower()] = parse_coords(input_data[key])
+                x, y = output_data[key.lower()]
+                if x < 0 or x > output_data["width"]:
                     raise ValueError(f"X value out of bounds: '{x}'")
-                if y < 0 or y > output_data["HEIGHT"]:
+                if y < 0 or y > output_data["height"]:
                     raise ValueError(f"Y value out of bounds: '{y}'")
             except (ValueError, SyntaxError) as e:
                 raise ValueError(f"Wrong value for {key} coordinates ({e})")
 
         # checks that output filename is valid:
-        output_data["OUTPUT_FILE"] = input_data["OUTPUT_FILE"]
-        if not output_data["OUTPUT_FILE"]:
+        output_data["output_file"] = input_data["OUTPUT_FILE"]
+        if not output_data["output_file"]:
             raise ValueError(f"Output filename is empty!")
-        if len(output_data["OUTPUT_FILE"]) > 100:
+        if len(output_data["output_file"]) > 100:
             raise ValueError(f"Wrong output filename (too long!)")
 
         # check for valid boolen values for PERFECT key:
         if input_data["PERFECT"].upper() == "TRUE":
-            output_data["PERFECT"] = True
+            output_data["perfect"] = True
         elif input_data["PERFECT"].upper() == "FALSE":
-            output_data["PERFECT"] = False
+            output_data["perfect"] = False
         else:
             raise ValueError("PERFECT only accepts boolean values (TRUE/FALSE)")
 

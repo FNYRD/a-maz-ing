@@ -1,14 +1,15 @@
 from mlx import Mlx
-from typing import Any, List, Tuple
+from typing import Any, List, Tuple, Dict
 from .maze import Maze
 from .color import Color
-
+from .maze_generator import MazeGenerator
 
 class MazeWindow():
     """Class to contain the maze displaying window"""
 
-    def __init__(self):
+    def __init__(self, config: Dict[str, Any]):
         self._m = Mlx()
+        self._generator: MazeGenrator = MazeGenerator(**config)
         self._ptr = self._m.mlx_init()
         self._win = None
         self.fg_color: int = 0xeeeeeeff
@@ -18,6 +19,30 @@ class MazeWindow():
         self.cell_size: int = 20
         self.wall_size: int = 4
         self.path_visible = True
+        self.maze: Maze = Maze(
+"""9515391539551795151151153
+EBABAE812853C1412BA812812
+96A8416A84545412AC4282C2A
+C3A83816A9395384453A82D02
+96842A852AC07AAD13A8283C2
+C1296C43AAB83AA92AA8686BA
+92E853968428444682AC12902
+AC3814452FA83FFF82C52C42A
+85684117AFC6857FAC1383D06
+C53AD043AFFFAFFF856AA8143
+91441294297FAFD501142C6BA
+AA912AC3843FAFFF82856D52A
+842A8692A92B8517C4451552A
+816AC384468285293917A9542
+C416928513C443A828456C3BA
+91416AA92C393A82801553AAA
+A81292AA814682C6A8693C6AA
+A8442C6C2C1168552C16A9542
+86956951692C1455416928552
+C545545456C54555545444556""",
+        (1,1),
+        (19, 14),
+        "SWSESWSESWSSSEESEEENEESESEESSSEEESSSEEENNENEE")
     
     def paint_bg(self, width: int, height: int):
         """Gives the maze area a background color (inside margins)""" 
@@ -103,8 +128,8 @@ class MazeWindow():
                     height * self.cell_size + self.margin + self.wall_size + 10,
                     0xffcccccc, instructions)
 
-    def render(self, maze: Maze) -> None:
-        """Receives the maze data and creates a window to draw it"""
+    def render(self) -> None:
+        """Creates the window and draws the maze on it"""
        
         # Setting user interaction:
         def mykey(keynum: int, stuff: Any):
@@ -139,6 +164,8 @@ class MazeWindow():
             print(stuff)
             self._m.mlx_destroy_window(self._ptr, self._win)
             self._m.mlx_release(self._ptr)
+
+        maze = self.maze
 
         # Creating window with maze size:
         self._win = self._m.mlx_new_window(self._ptr,

@@ -8,37 +8,14 @@ class MazeManager():
 
     def __init__(self, config_data: Dict[str, Any]) -> None:
         self._config_data: Dict[str, Any] = config_data
-        #self._maze: Maze = None
+        self._output_file: str = self._config_data.pop("output_file")
+        self._window = MazeWindow(self._config_data)
 
-    def gen_maze(self) -> None:
-        #self._maze = Maze(self.config_data)
+    def write_maze_file(self) -> None:
+        """Saves the current maze to a file"""
+        #open(self._output_file, w) ....
         pass
 
     def show_maze(self) -> None:
-        maze = Maze(
-"""9515391539551795151151153
-EBABAE812853C1412BA812812
-96A8416A84545412AC4282C2A
-C3A83816A9395384453A82D02
-96842A852AC07AAD13A8283C2
-C1296C43AAB83AA92AA8686BA
-92E853968428444682AC12902
-AC3814452FA83FFF82C52C42A
-85684117AFC6857FAC1383D06
-C53AD043AFFFAFFF856AA8143
-91441294297FAFD501142C6BA
-AA912AC3843FAFFF82856D52A
-842A8692A92B8517C4451552A
-816AC384468285293917A9542
-C416928513C443A828456C3BA
-91416AA92C393A82801553AAA
-A81292AA814682C6A8693C6AA
-A8442C6C2C1168552C16A9542
-86956951692C1455416928552
-C545545456C54555545444556""",
-        (1,1),
-        (19, 14),
-        "SWSESWSESWSSSEESEEENEESESEESSSEEESSSEEENNENEE")
-
-        window = MazeWindow()
-        window.render(maze)
+        """Shows the maze"""
+        self._window.render()
