@@ -8,8 +8,8 @@ class ConfigParser():
         self.config_file = config_file
 
     def read_config(self) -> Dict[str, str] | None:
-        """Tries to open the config file and returns Key=Value pairs as a Dict"""
-        
+        """Tries to open the config file and returns Key=Value as a Dict"""
+
         config_data: Dict[str, str] = {}
         try:
             with open(self.config_file, "r") as config_file:
@@ -21,7 +21,7 @@ class ConfigParser():
 
                     if '=' in line:
                         key, value = line.split("=", 1)
-                        
+
                         # are we accepting spaces??????????????????????????????
                         # RE: we are, we're avoiding it with your .strip btw
                         config_data[key.strip()] = value.strip()
@@ -34,7 +34,8 @@ class ConfigParser():
         except PermissionError:
             print(f"Error: config file '{self.config_file}' is not accesible")
         except OSError:
-            print(f"Error: an error ocurred while opening config file '{self.config_file}'")
+            print("Error: an error ocurred while opening config file"
+                  f" '{self.config_file}'")
         except SyntaxError as e:
             print(f"Error: {e} - Values must be in 'KEY=VALUE' format")
         return None
@@ -46,7 +47,7 @@ class Validator():
     def validate_config(self, input_data: Dict[str, str]) -> Dict[str, Any]:
         """Validates the config data provided is valid to run the program,
         performes all the type conversions required"""
-        
+
         def parse_coords(coord_str: str) -> Tuple[int, int]:
             """Gets (x,y) coordinates as a string, validates the format,
             and returns them as a tuple"""
@@ -64,7 +65,7 @@ class Validator():
         for key in required:
             if key not in input_data.keys():
                 raise KeyError(f"Missing requiered configuration value {key}")
-        
+
         # check if width is valid:
         try:
             output_data["width"] = int(input_data["WIDTH"])
@@ -81,7 +82,7 @@ class Validator():
         except ValueError as e:
             raise ValueError(f"Wrong 'HEIGHT' value ({e})")
 
-        # check if entry and exit coordinates are valid and parse them into a tuple
+        # check if entry and exit coords are valid and parse them into a tuple
         for key in required[2:4]:
             try:
                 output_data[key.lower()] = parse_coords(input_data[key])
@@ -91,14 +92,15 @@ class Validator():
                 if y < 0 or y > output_data["height"]:
                     raise ValueError(f"Y value out of bounds: '{y}'")
             except (ValueError, SyntaxError) as e:
-                raise ValueError(f"Wrong value for {key} coordinates ({e})")
+                raise ValueError(
+                        f"Wrong value for {key} coordinates ({e})")
 
         # checks that output filename is valid:
         output_data["output_file"] = input_data["OUTPUT_FILE"]
         if not output_data["output_file"]:
-            raise ValueError(f"Output filename is empty!")
+            raise ValueError("Output filename is empty!")
         if len(output_data["output_file"]) > 100:
-            raise ValueError(f"Wrong output filename (too long!)")
+            raise ValueError("Wrong output filename (too long!)")
 
         # check for valid boolen values for PERFECT key:
         if input_data["PERFECT"].upper() == "TRUE":
@@ -106,6 +108,7 @@ class Validator():
         elif input_data["PERFECT"].upper() == "FALSE":
             output_data["perfect"] = False
         else:
-            raise ValueError("PERFECT only accepts boolean values (TRUE/FALSE)")
+            raise ValueError(
+                    "PERFECT only accepts boolean values (TRUE/FALSE)")
 
         return output_data

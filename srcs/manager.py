@@ -1,6 +1,5 @@
 from typing import Dict, Any
 from .window import MazeWindow
-from .maze import Maze
 
 
 class MazeManager():
@@ -13,7 +12,7 @@ class MazeManager():
 
     def write_maze_file(self) -> None:
         """Saves the current maze to a file"""
-        #open(self._output_file, w) ....
+        # open(self._output_file, w) ....
         pass
 
     def show_maze(self) -> None:

@@ -13,7 +13,7 @@ class Color(IntEnum):
     SAPPHIRE = 0xFF2980b9
     AMETHYST = 0xFF8e44ad
     RUBY = 0xFFc0392b
-    
+
     # Vibrant & Bold
     NEON_CYAN = 0xFF00d4ff
     NEON_MAGENTA = 0xFFff00ff
