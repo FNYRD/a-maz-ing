@@ -37,5 +37,6 @@ class Color(IntEnum):
     BLUE = 0xFFFF0000
     BLACK = 0xFF000000
 
-    def get_random_color():
+    @classmethod
+    def get_random_color(cls) -> int:
         return random.choice(list(Color))

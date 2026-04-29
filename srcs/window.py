@@ -9,7 +9,7 @@ class MazeWindow():
 
     def __init__(self, config: Dict[str, Any]):
         self._m = Mlx()
-        self._generator: MazeGenrator = MazeGenerator(**config)
+        self._generator: MazeGenerator = MazeGenerator(**config)
         self._ptr = self._m.mlx_init()
         self._win = None
         self.fg_color: int = 0xeeeeeeff
@@ -46,7 +46,7 @@ C545545456C54555545444556""".strip("\n").split("\n")],
         config["exit"],
         "SWSESWSESWSSSEESEEENEESESEESSSEEESSSEEENNENEE")
     
-    def paint_bg(self, width: int, height: int):
+    def paint_bg(self, width: int, height: int) -> None:
         """Gives the maze area a background color (inside margins)""" 
 
         for x in range(0, width * self.cell_size):
@@ -54,7 +54,7 @@ C545545456C54555545444556""".strip("\n").split("\n")],
                 self._m.mlx_pixel_put(
                     self._ptr, self._win, self.margin + x, self.margin + y, self.bg_color)
 
-    def draw_maze(self, width: int, height: int, rows: List[str]) -> None:
+    def draw_maze(self, width: int, height: int, rows: List[List[int]]) -> None:
         """Draws the maze on the instance window"""
 
         for x in range(0, width):
@@ -62,7 +62,7 @@ C545545456C54555545444556""".strip("\n").split("\n")],
                 self.draw_cell(self.cell_size * x + self.margin,
                     self.cell_size * y + self.margin, rows[y][x])
 
-    def draw_single_block(self, coords: Tuple[int, int], color: int):
+    def draw_single_block(self, coords: Tuple[int, int], color: int) -> None:
         """Paints a single block (space between walls) at the specified position,
         with the specified color"""
 
@@ -133,7 +133,7 @@ C545545456C54555545444556""".strip("\n").split("\n")],
         """Creates the window and draws the maze on it"""
        
         # Setting user interaction:
-        def mykey(keynum: int, stuff: Any):
+        def mykey(keynum: int, stuff: Any) -> None:
             """Captures key release events"""
 
             # 'q' to exit
@@ -165,7 +165,7 @@ C545545456C54555545444556""".strip("\n").split("\n")],
                 self.maze.rows = self._generator.show() #  <-----------------------
                 self.draw_maze(self.maze.width, self.maze.height, self.maze.rows)
 
-        def close_window(stuff: Any):
+        def close_window(stuff: Any) -> None:
             """Captures ClientMessage events (WM_DELETE_WINDOW)"""
             print(stuff)
             self._m.mlx_destroy_window(self._ptr, self._win)

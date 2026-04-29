@@ -4,7 +4,7 @@ from srcs.validator import ConfigParser, Validator
 from srcs.manager import MazeManager
 
 
-def main():
+def main() -> None:
     # check if we have a config filename
     if len(sys.argv) != 2:
         print(f"Usage: python {sys.argv[0]} [config file]")
