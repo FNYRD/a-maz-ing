@@ -87,9 +87,9 @@ class Validator():
             try:
                 output_data[key.lower()] = parse_coords(input_data[key])
                 x, y = output_data[key.lower()]
-                if x < 0 or x > output_data["width"]:
+                if x < 0 or x >= output_data["width"]:
                     raise ValueError(f"X value out of bounds: '{x}'")
-                if y < 0 or y > output_data["height"]:
+                if y < 0 or y >= output_data["height"]:
                     raise ValueError(f"Y value out of bounds: '{y}'")
             except (ValueError, SyntaxError) as e:
                 raise ValueError(
