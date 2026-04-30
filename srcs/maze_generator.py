@@ -1,16 +1,10 @@
 try:
     from typing import Tuple, List, Optional
+    from collections.abc import Callable
     import random
+    from exceptions import MazeNotExistsError, MazeTooSmallError
 except ImportError as e:
     print(f"An error happened importing the modules\n{e}")
-
-
-class MazeTooSmallError(Exception):
-    pass
-
-
-class MazeNotExistsError(Exception):
-    pass
 
 
 class MazeGenerator:
@@ -73,21 +67,39 @@ class MazeGenerator:
                      for _ in range(self.height)]
         self.__pattern()
 
-    def __isvalid(self, position: Tuple[int, int]) -> List[Tuple[int, int]]:
+    def __isvalid(self, position: Tuple[int, int],
+                  flag: int = 0) -> List[Tuple[int, int]]:
+        """This function will populate the options list with all
+        the valid cells to access, adapted to each case."""
         x, y = position
         options: List[Tuple[int, int]] = []
-        if 0 < y - 1 and 0 < x <= self.width - 2 and self.maze[y - 1][x] == 0xf:
+        condition: Callable = lambda cell: cell != 42 if flag else cell == 0xf
+        if position == (0, 0):
+            options.append((1, 1))
+        if position == (self.width - 1, self.height - 1):
+            options.append((self.width - 2, self.height - 2))
+        if position == (self.width - 1, 0):
+            options.append((self.width - 2, 1))
+        if position == (0, self.height - 1):
+            options.append((1, self.height - 2))
+        if ((0 < y - 1) and (0 < x <= self.width - 2)
+                and (condition(self.maze[y - 1][x]))):
             options.append((x, y - 1))
-        if self.height - 1 > y + 1 and 0 < x <= self.width - 2 and self.maze[y + 1][x] == 0xf:
+        if ((self.height - 1 > y + 1) and (0 < x <= self.width - 2)
+                and (condition(self.maze[y + 1][x]))):
             options.append((x, y + 1))
-        if 0 < x - 1 and 0 < y <= self.height - 2 and self.maze[y][x - 1] == 0xf:
+        if ((0 < x - 1) and (0 < y <= self.height - 2)
+                and (condition(self.maze[y][x - 1]))):
             options.append((x - 1, y))
-        if self.width - 1 > x + 1 and 0 < y <= self.height - 2 and self.maze[y][x + 1] == 0xf:
+        if ((self.width - 1 > x + 1) and (0 < y <= self.height - 2)
+                and (condition(self.maze[y][x + 1]))):
             options.append((x + 1, y))
         return options
 
     def __opening_walls(self, current: Tuple[int, int],
                         next: Tuple[int, int]) -> None:
+        """This function will calculate which wall must be open depending
+        on the move between the cells."""
         cx, cy = current
         nx, ny = next
         if cy != ny:
@@ -115,21 +127,34 @@ class MazeGenerator:
         next: Tuple[int, int] = (0, 0)
         current: Tuple[int, int] = self.entry
         options: List[Tuple[int, int]]
-        while True:
-            options = self.__isvalid(current)
-            if len(options) > 0:
-                next = random.choice(options)
-                self.__opening_walls(current, next)
-                stack.append(current)
-                current = next
-                if next == self.exit:
-                    # BORRAR, ES SOLO PARA VER SI LLEGA A LA SALIDA
-                    self.maze[self.exit[1]][self.exit[0]] = 100
-                    break
-            else:
-                if len(stack) == 0:
-                    break
-                current = stack.pop()
+        exit_cell: Tuple[int, int] = (0, 0)
+        spins: Callable = lambda: 1 if self.perfect else 2
+        if self.exit in {(0, 0), (self.width - 1, self.height - 1),
+                         (self.width - 1, 0), (0, self.height - 1)}:
+            exit_cell = self.__isvalid(self.exit)[0]
+        else:
+            exit_cell = self.exit
+        if self.seed is not None:
+            random.seed(self.seed)
+        for spin in range(spins()):
+            if spin == 1 and self.seed:
+                random.seed(self.seed + 5)
+                current = self.entry
+            while True:
+                options = self.__isvalid(current, spin)
+                if len(options) > 0:
+                    next = random.choice(options)
+                    self.__opening_walls(current, next)
+                    stack.append(current)
+                    current = next
+                    if next == exit_cell:
+                        # BORRAR, ES SOLO PARA VER SI LLEGA A LA SALIDA
+                        self.maze[exit_cell[1]][exit_cell[0]] = 100
+                        break
+                else:
+                    if len(stack) == 0:
+                        break
+                    current = stack.pop()
 
 # FALTA:
-# SEED, PERFECT Y EL ANCHO DE LOS PASILLOS
+# EL ANCHO DE LOS PASILLOS

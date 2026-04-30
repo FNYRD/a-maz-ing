@@ -6,7 +6,7 @@ try:
 except ImportError as e:
     print(f"An error happened importing the modules\n{e}")
 
-maze = MazeGenerator(11, 11, (1, 7), (6, 5), False)
+maze = MazeGenerator(25, 25, (0, 0), (10, 10), False)
 
 try:
     maze.generate()
@@ -19,8 +19,6 @@ try:
         print(" ".join(f"{cell:2}" for cell in row))
 except MazeTooSmallError as e:
     print(f"Error {e}")
-
-
 
 
 
