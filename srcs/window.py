@@ -19,7 +19,7 @@ class MazeWindow():
         self.margin: int = 10
         self.cell_size: int = 20
         self.wall_size: int = 4
-        self.path_visible = True
+        self.path_visible = False
         self.maze: Maze = Maze(
                 [[int('0x' + value, 16) for value in row] for row in """
 9515391539551795151151153
@@ -51,8 +51,8 @@ C545545456C54555545444556""".strip("\n").split("\n")],
     def paint_bg(self, width: int, height: int) -> None:
         """Gives the maze area a background color (inside margins)"""
 
-        for x in range(0, width * self.cell_size):
-            for y in range(0, height * self.cell_size):
+        for x in range(0, width * self.cell_size + self.wall_size - 1):
+            for y in range(0, height * self.cell_size + self.wall_size - 1):
                 self._m.mlx_pixel_put(
                     self._ptr, self._win, self.margin + x,
                     self.margin + y, self.bg_color)
@@ -118,7 +118,7 @@ C545545456C54555545444556""".strip("\n").split("\n")],
                     self._m.mlx_pixel_put(
                         self._ptr, self._win,
                         x + x_offset, y + y_offset, self.fg_color)
-                elif code == 0xF:
+                elif code == 42:  # 0xF:
                     self._m.mlx_pixel_put(
                             self._ptr, self._win,
                             x + x_offset, y + y_offset, self.hl_color)
@@ -128,7 +128,7 @@ C545545456C54555545444556""".strip("\n").split("\n")],
         accordingly to the maze/window size"""
 
         # print(width * self.cell_size)
-        instructions: str = "(c) color | (s) solution | (f) pattern | (q) quit"
+        instructions: str = "(c) color | (s) solution | (g) regen | (q) quit"
         space = width * self.cell_size
         length = len(instructions) * 10 + 10
         # print(space - length)
@@ -141,8 +141,30 @@ C545545456C54555545444556""".strip("\n").split("\n")],
                 height * self.cell_size + self.margin + self.wall_size + 10,
                 0xffcccccc, instructions)
 
+    def generate(self) -> None:
+        self._generator.generate()
+        self._generator.dfs()
+
+        # Print raw data for testing:
+        for row in self._generator.maze:
+            print(row)
+
+        self.maze.rows = self._generator.maze
+
+        # Draw the maze:
+        self.paint_bg(self.maze.width, self.maze.height)
+        self.draw_maze(self.maze.width, self.maze.height, self.maze.rows)
+
+        # Draw start and exit:
+        self.draw_single_block(self.maze.start, 0xff00ff00)
+        self.draw_single_block(self.maze.exit, 0xffff0000)
+        return
+
+        # Draw solution path:
+        self.draw_path(self.maze.start, self.maze.path, 0xff888888)
+
     def render(self) -> None:
-        """Creates the window and draws the maze on it"""
+        """Creates the window and sets user interactions"""
 
         # Setting user interaction:
         def mykey(keynum: int, stuff: Any) -> None:
@@ -173,10 +195,8 @@ C545545456C54555545444556""".strip("\n").split("\n")],
                 self.draw_maze(maze.width, maze.height, maze.rows)
 
             # 'g' to regenerate:
-            if keynum == 103:  # -              Connection w/ MazeGenerator!!!
-                self.maze.rows = self._generator.show()  # <------------------
-                self.draw_maze(
-                        self.maze.width, self.maze.height, self.maze.rows)
+            if keynum == 103:
+                self.generate()
 
         def close_window(stuff: Any) -> None:
             """Captures ClientMessage events (WM_DELETE_WINDOW)"""
