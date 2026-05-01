@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 try:
     from maze_generator import MazeGenerator, MazeTooSmallError
-    from typing import List
-    import random
 except ImportError as e:
     print(f"An error happened importing the modules\n{e}")
 

@@ -20,6 +20,7 @@ class MazeGenerator:
         self.perfect: bool = perfect
         self.seed: Optional[int] = seed
         self.maze: List[List[int]] = []
+        self.pattern: List[Tuple[int, int]] = []
 
     def __pattern(self, offseth: int = 0, offsetw: int = 0,
                   direction: int = 0) -> None:
@@ -61,11 +62,39 @@ class MazeGenerator:
             return
         for coordinate in pattern_xy:
             self.maze[coordinate[0]][coordinate[1]] = 42
+        self.pattern = pattern_xy
 
     def generate(self) -> None:
         self.maze = [[0xf for _ in range(self.width)]
                      for _ in range(self.height)]
         self.__pattern()
+
+    def narrow_corridor(self, position: Tuple[int, int],
+                        options:
+                        List[Tuple[int, int]]) -> List[Tuple[int, int]]:
+        xp, yp = position
+        lateral: bool = ((self.maze[yp][xp] & 0x2 == 0)
+                         and (self.maze[yp][xp] & 0x8 == 0))
+        vertical: bool = ((self.maze[yp][xp] & 0x1 == 0)
+                          and (self.maze[yp][xp] & 0x4 == 0))
+        to_return: List[Tuple[int, int]] = []
+        for option in options:
+            xo, yo = option
+            if yp != yo:
+                if (((self.maze[yo][xo] & 0x2 == 0)
+                     and (self.maze[yo][xo] & 0x8 == 0))
+                        and lateral):
+                    pass
+                else:
+                    to_return.append(option)
+            elif xp != xo:
+                if (((self.maze[yo][xo] & 0x1 == 0)
+                     and (self.maze[yo][xo] & 0x4 == 0))
+                        and vertical):
+                    pass
+                else:
+                    to_return.append(option)
+        return to_return
 
     def __isvalid(self, position: Tuple[int, int],
                   flag: int = 0) -> List[Tuple[int, int]]:
@@ -94,7 +123,7 @@ class MazeGenerator:
         if ((self.width - 1 > x + 1) and (0 < y <= self.height - 2)
                 and (condition(self.maze[y][x + 1]))):
             options.append((x + 1, y))
-        return options
+        return self.narrow_corridor(position, options)
 
     def __opening_walls(self, current: Tuple[int, int],
                         next: Tuple[int, int]) -> None:
@@ -137,24 +166,49 @@ class MazeGenerator:
         if self.seed is not None:
             random.seed(self.seed)
         for spin in range(spins()):
-            if spin == 1 and self.seed:
-                random.seed(self.seed + 5)
+            if spin == 1:
                 current = self.entry
+                visited: set[Tuple[int, int]] = set()
+                stack = []
+                if self.seed:
+                    random.seed(self.seed + 5)
             while True:
                 options = self.__isvalid(current, spin)
+                if spin == 1:
+                    visited.add(current)
+                    options = [o for o in options if o not in visited]
                 if len(options) > 0:
                     next = random.choice(options)
                     self.__opening_walls(current, next)
                     stack.append(current)
                     current = next
                     if next == exit_cell:
-                        # BORRAR, ES SOLO PARA VER SI LLEGA A LA SALIDA
-                        self.maze[exit_cell[1]][exit_cell[0]] = 100
                         break
                 else:
                     if len(stack) == 0:
                         break
                     current = stack.pop()
+        for coordinate in self.pattern:
+            self.maze[coordinate[0]][coordinate[1]] = 0xf
 
+
+def main() -> None:
+    maze = MazeGenerator(25, 25, (0, 0), (10, 10), True)
+    try:
+        # print("WITHOUT DFS")
+        # for row in maze.maze:
+        #     print(" ".join(f"{cell:2}" for cell in row))
+        # print("\nWITH DFS")
+
+        maze.generate()
+        maze.dfs()
+        for row in maze.maze:
+            print(" ".join(f"{cell:2}" for cell in row))
+    except MazeTooSmallError as e:
+        print(f"Error {e}")
+
+
+if __name__ == "__main__":
+    main()
 # FALTA:
-# EL ANCHO DE LOS PASILLOS
+# Revisar como queda el laberinto con perfect en terminos visuales
