@@ -1,10 +1,18 @@
 try:
-    from typing import Tuple, List, Optional
+    from typing import Tuple, List, Optional, Dict
     from collections.abc import Callable
+    from collections import deque
     import random
-    from exceptions import MazeNotExistsError, MazeTooSmallError
 except ImportError as e:
     print(f"An error happened importing the modules\n{e}")
+
+
+class MazeTooSmallError(Exception):
+    pass
+
+
+class MazeNotExistsError(Exception):
+    pass
 
 
 class MazeGenerator:
@@ -69,9 +77,9 @@ class MazeGenerator:
                      for _ in range(self.height)]
         self.__pattern()
 
-    def narrow_corridor(self, position: Tuple[int, int],
-                        options:
-                        List[Tuple[int, int]]) -> List[Tuple[int, int]]:
+    def __narrow_corridor(self, position: Tuple[int, int],
+                          options:
+                          List[Tuple[int, int]]) -> List[Tuple[int, int]]:
         xp, yp = position
         lateral: bool = ((self.maze[yp][xp] & 0x2 == 0)
                          and (self.maze[yp][xp] & 0x8 == 0))
@@ -123,7 +131,7 @@ class MazeGenerator:
         if ((self.width - 1 > x + 1) and (0 < y <= self.height - 2)
                 and (condition(self.maze[y][x + 1]))):
             options.append((x + 1, y))
-        return self.narrow_corridor(position, options)
+        return self.__narrow_corridor(position, options)
 
     def __opening_walls(self, current: Tuple[int, int],
                         next: Tuple[int, int]) -> None:
@@ -158,8 +166,8 @@ class MazeGenerator:
         options: List[Tuple[int, int]]
         exit_cell: Tuple[int, int] = (0, 0)
         spins: Callable = lambda: 1 if self.perfect else 2
-        if self.exit in {(0, 0), (self.width - 1, self.height - 1),
-                         (self.width - 1, 0), (0, self.height - 1)}:
+        if ((0 in self.exit) or (self.width - 1 in self.exit)
+                or (self.height - 1 in self.exit)):
             exit_cell = self.__isvalid(self.exit)[0]
         else:
             exit_cell = self.exit
@@ -190,6 +198,51 @@ class MazeGenerator:
                     current = stack.pop()
         for coordinate in self.pattern:
             self.maze[coordinate[0]][coordinate[1]] = 0xf
+
+    def bfs(self) -> None:
+        fifo: deque = deque()
+        visited: set[Tuple[int, int]] = set()
+        parents: Dict[Tuple[int, int], Tuple[int, int]] = {}
+        exit_cell: Tuple[int, int] = (0, 0)
+        current: Tuple[int, int] = self.entry
+        if ((0 in self.exit) or (self.width - 1 in self.exit)
+                or (self.height - 1 in self.exit)):
+            exit_cell = self.__isvalid(self.exit)[0]
+        else:
+            exit_cell = self.exit
+        fifo.append(self.entry)
+        while True:
+            x, y = fifo.popleft()
+            if self.maze[y][x] & 0x2 == 0:
+                if (x + 1, y) not in visited:
+                    visited.add((x + 1, y))
+                    fifo.append((x + 1, y))
+                    parents[(x + 1, y)] = (x, y)
+
+            if self.maze[y][x] & 0x8 == 0:
+                fifo.append((x - 1, y))
+            if self.maze[y][x] & 0x1 == 0:
+                fifo.append((x, y - 1))
+            if self.maze[y][x] & 0x4 == 0:
+                fifo.append((x, y + 1))
+            
+# 1. Sacar celda de la cola
+# DONE
+
+# 2. Ver vecinos accesibles
+# Los vecinos quizas los puedo ver creando un flag nueva para que solo pase por celdas que no
+# estan cerradas
+        # lateral: bool = ((self.maze[yp][xp] & 0x2 == 0)
+        #                  and (self.maze[yp][xp] & 0x8 == 0))
+        # vertical: bool = ((self.maze[yp][xp] & 0x1 == 0)
+        #                   and (self.maze[yp][xp] & 0x4 == 0))
+
+# 3. Para cada vecino no visitado:
+#    - Marcar como visitado
+#    - Guardar de dónde viene (padre)
+#    - Añadir a la cola
+
+# 4. Repetir hasta llegar a la salida
 
 
 def main() -> None:
