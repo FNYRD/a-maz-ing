@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 try:
     from typing import Tuple, List, Optional, Dict
     from collections.abc import Callable
@@ -50,10 +51,11 @@ class MazeGenerator:
             pattern_xy.append((start_for[1] + i, start_for[0]))
             pattern_xy.append((start_to[1] + i, start_to[0]))
             pattern_xy.append((start_to[1] - i, start_to[0] + 1))
-            pattern_xy.append((start_for[1] - i, start_for[0] - 1))
+            pattern_xy.append((start_for[1] - i, start_for[0] - 2))
             if i == 2:
                 pattern_xy.append((start_to[1] + i, start_to[0] + 1))
                 pattern_xy.append((start_to[1] - i, start_to[0]))
+        pattern_xy.append((start_for[1], start_for[0] - 1))
         if entry_test in pattern_xy or exit_test in pattern_xy:
             if start_for[1] - 2 > 1 and direction != 2:
                 self.__pattern(offseth - 1, offsetw, 1)
@@ -157,12 +159,12 @@ class MazeGenerator:
         current: Tuple[int, int] = self.entry
         options: List[Tuple[int, int]]
         spins: Callable = lambda: 1 if self.perfect else 2
+        visited: set[Tuple[int, int]] = set()
         if self.seed is not None:
             random.seed(self.seed)
         for spin in range(spins()):
             if spin == 1:
                 current = self.entry
-                visited: set[Tuple[int, int]] = set()
                 stack = []
                 if self.seed:
                     random.seed(self.seed + 5)
@@ -179,7 +181,33 @@ class MazeGenerator:
                     if next == self.exit:
                         break
                 else:
-                    if len(stack) == 0:             
+                    if len(stack) == 0:
+                        break
+                    current = stack.pop()
+        # New cicle
+        closed_cells: List[Tuple[int, int]] = []
+        while True:
+            closed_cells = [(x, y) for y, row in enumerate(self.maze)
+                            for x, val in enumerate(row) if val == 0xf]
+            if len(closed_cells) == 0:
+                break
+            visited = set()
+            current = random.choice(closed_cells)
+            stack = []
+            exit_random: Tuple[int, int] = random.choice(closed_cells)
+            while True:
+                options = self.__isvalid(current, 1)
+                visited.add(current)
+                options = [o for o in options if o not in visited]
+                if len(options) > 0:
+                    next = random.choice(options)
+                    self.__opening_walls(current, next)
+                    stack.append(current)
+                    current = next
+                    if next == exit_random:
+                        break
+                else:
+                    if len(stack) == 0:
                         break
                     current = stack.pop()
         for coordinate in self.pattern:
@@ -189,13 +217,7 @@ class MazeGenerator:
         fifo: deque = deque()
         visited: set[Tuple[int, int]] = set()
         parents: Dict[Tuple[int, int], Tuple[int, int]] = {}
-        exit_cell: Tuple[int, int] = (0, 0)
         current: Tuple[int, int] = self.entry
-        if ((0 in self.exit) or (self.width - 1 in self.exit)
-                or (self.height - 1 in self.exit)):
-            exit_cell = self.__isvalid(self.exit)[0]
-        else:
-            exit_cell = self.exit
         fifo.append(self.entry)
         while True:
             x, y = fifo.popleft()
@@ -211,7 +233,7 @@ class MazeGenerator:
                 fifo.append((x, y - 1))
             if self.maze[y][x] & 0x4 == 0:
                 fifo.append((x, y + 1))
-            
+
 # 1. Sacar celda de la cola
 # DONE
 
