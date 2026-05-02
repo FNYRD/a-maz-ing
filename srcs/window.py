@@ -20,6 +20,9 @@ class MazeWindow():
         self.cell_size: int = 20
         self.wall_size: int = 4
         self.path_visible = False
+        self.menu_visible = False
+        self.instructions: List[str] = [
+            "(c) color", "(s) solution", "(f) pattern", "(g) regen", "(q) quit"]
         self.maze: Maze = Maze(
                 [[int('0x' + value, 16) for value in row] for row in """
 9515391539551795151151153
@@ -48,16 +51,19 @@ C545545456C54555545444556""".strip("\n").split("\n")],
                 config["exit"],
                 "SWSESWSESWSSSEESEEENEESESEESSSEEESSSEEENNENEE")
 
-    def paint_bg(self, width: int, height: int) -> None:
+    def paint_bg(self, width: int, height: int,
+                 color: int = 0) -> None:
         """Gives the maze area a background color (inside margins)"""
 
+        if not color:
+            color = self.bg_color
         for x in range(0, width * self.cell_size + self.wall_size - 1):
             for y in range(0, height * self.cell_size + self.wall_size - 1):
                 self._m.mlx_pixel_put(
                     self._ptr, self._win, self.margin + x,
-                    self.margin + y, self.bg_color)
+                    self.margin + y, color)
 
-    def draw_maze(self, width: int, height: int, row: List[List[int]]) -> None:
+    def draw_maze_walls(self, width: int, height: int, row: List[List[int]]) -> None:
         """Draws the maze on the instance window"""
 
         for x in range(0, width):
@@ -127,41 +133,59 @@ C545545456C54555545444556""".strip("\n").split("\n")],
         """Prints the instructions for user interaction, distributing them
         accordingly to the maze/window size"""
 
-        # print(width * self.cell_size)
-        instructions: str = "(c) color | (s) solution | (g) regen | (q) quit"
-        space = width * self.cell_size
-        length = len(instructions) * 10 + 10
-        # print(space - length)
+        if not self.menu_visible:
+            
+            # check if there is enough to show instructions in line:
+            space = width * self.cell_size
+            length = sum(len(i) for i in self.instructions) * 10 + 3 * len(self.instructions) + 10
 
-        # check if there is enough to show instructions in line:
-        if space >= length:
+            if space >= length:
+                self._m.mlx_string_put(
+                    self._ptr, self._win,
+                    self.margin + self.wall_size + (space - length) // 2,
+                    height * self.cell_size + self.margin + self.wall_size + 10,
+                    0xffcccccc, " | ".join(self.instructions))
+            else:
+                self._m.mlx_string_put(
+                    self._ptr, self._win,
+                    self.margin + self.wall_size + (space - length) // 2,
+                    height * self.cell_size + self.margin + self.wall_size + 10,
+                    0xffcccccc, "(m) menu")
+        else:
             self._m.mlx_string_put(
                 self._ptr, self._win,
-                self.margin + self.wall_size + (space - length) // 2,
-                height * self.cell_size + self.margin + self.wall_size + 10,
-                0xffcccccc, instructions)
+                self.margin + self.wall_size + 10,
+                self.margin + self.wall_size + 10,
+                0xffcccccc, "-- Menu --")
+            for row, ins in enumerate(self.instructions):
+                self._m.mlx_string_put(
+                    self._ptr, self._win,
+                    self.margin + self.wall_size + 10,
+                    self.margin + self.wall_size + 20 * row + 30,
+                    0xffcccccc, ins)
 
-    def generate(self) -> None:
-        self._generator.generate()
-        self._generator.dfs()
+    def show_menu(self) -> None:
+        self.paint_bg(self.maze.width, self.maze.height, 0xCC000000)
+        self.draw_instructions(self.maze.width, self.maze.height)
 
-        # Print raw data for testing:
-        for row in self._generator.maze:
-            print(row)
-
-        self.maze.rows = self._generator.maze
-
+    def draw_maze(self) -> None:
         # Draw the maze:
         self.paint_bg(self.maze.width, self.maze.height)
-        self.draw_maze(self.maze.width, self.maze.height, self.maze.rows)
+        self.draw_maze_walls(self.maze.width, self.maze.height, self.maze.rows)
 
         # Draw start and exit:
         self.draw_single_block(self.maze.start, 0xff00ff00)
         self.draw_single_block(self.maze.exit, 0xffff0000)
-        return
 
         # Draw solution path:
-        self.draw_path(self.maze.start, self.maze.path, 0xff888888)
+        if self.path_visible:
+            self.draw_path(self.maze.start, self.maze.path, 0xff888888)
+
+    def generate(self) -> None:
+        self._generator.generate()
+        self._generator.dfs()
+        self.maze.rows = self._generator.maze
+        self.draw_maze()
 
     def render(self) -> None:
         """Creates the window and sets user interactions"""
@@ -175,6 +199,18 @@ C545545456C54555545444556""".strip("\n").split("\n")],
                 self._m.mlx_destroy_window(self._ptr, self._win)
                 self._m.mlx_release(self._ptr)
 
+            # 'Esc' to hide menu:
+            if keynum in [65307, 115, 99, 102, 103]:
+                if self.menu_visible:
+                    self.menu_visible = False
+                    self.draw_maze()
+
+            # 'm' to show menu:
+            if keynum == 109:
+                if not self.menu_visible:
+                    self.menu_visible = True
+                    self.show_menu()
+
             # 's' to show/hide solution path:
             if keynum == 115:
                 if self.path_visible:
@@ -187,12 +223,12 @@ C545545456C54555545444556""".strip("\n").split("\n")],
             # 'c' to change walls color:
             if keynum == 99:
                 self.fg_color = Color.get_random_color()
-                self.draw_maze(maze.width, maze.height, maze.rows)
+                self.draw_maze_walls(maze.width, maze.height, maze.rows)
 
-            # 'f' to change walls color:
+            # 'f' to change pattern color:
             if keynum == 102:
                 self.hl_color = Color.get_random_color()
-                self.draw_maze(maze.width, maze.height, maze.rows)
+                self.draw_maze_walls(maze.width, maze.height, maze.rows)
 
             # 'g' to regenerate:
             if keynum == 103:
@@ -217,7 +253,7 @@ C545545456C54555545444556""".strip("\n").split("\n")],
 
         # Draw the maze:
         self.paint_bg(maze.width, maze.height)
-        self.draw_maze(maze.width, maze.height, maze.rows)
+        self.draw_maze_walls(maze.width, maze.height, maze.rows)
 
         # Draw start and exit:
         self.draw_single_block(maze.start, 0xff00ff00)
