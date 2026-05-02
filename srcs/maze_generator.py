@@ -191,7 +191,7 @@ class MazeGenerator:
                             for x, val in enumerate(row) if val == 0xf]
             if len(closed_cells) == 0:
                 break
-            visited = set()
+            visited = set(list(visited)[:len(visited) // 2])
             current = random.choice(closed_cells)
             stack = []
             exit_random: Tuple[int, int] = random.choice(closed_cells)
