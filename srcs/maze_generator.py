@@ -111,14 +111,6 @@ class MazeGenerator:
         x, y = position
         options: List[Tuple[int, int]] = []
         condition: Callable = lambda cell: cell != 42 if flag else cell == 0xf
-        # if position == (0, 0):
-        #     options.append((1, 1))
-        # if position == (self.width - 1, self.height - 1):
-        #     options.append((self.width - 2, self.height - 2))
-        # if position == (self.width - 1, 0):
-        #     options.append((self.width - 2, 1))
-        # if position == (0, self.height - 1):
-        #     options.append((1, self.height - 2))
         if ((0 <= y - 1) and (0 <= x <= self.width - 1)
                 and (condition(self.maze[y - 1][x]))):
             options.append((x, y - 1))
@@ -164,13 +156,7 @@ class MazeGenerator:
         next: Tuple[int, int] = (0, 0)
         current: Tuple[int, int] = self.entry
         options: List[Tuple[int, int]]
-        exit_cell: Tuple[int, int] = (0, 0)
         spins: Callable = lambda: 1 if self.perfect else 2
-        # if ((0 in self.exit) or (self.width - 1 in self.exit)
-        #         or (self.height - 1 in self.exit)):
-        #     exit_cell = self.__isvalid(self.exit)[0]
-        # else:
-        #     exit_cell = self.exit
         if self.seed is not None:
             random.seed(self.seed)
         for spin in range(spins()):
@@ -190,10 +176,10 @@ class MazeGenerator:
                     self.__opening_walls(current, next)
                     stack.append(current)
                     current = next
-                    if next == exit_cell:
+                    if next == self.exit:
                         break
                 else:
-                    if len(stack) == 0:
+                    if len(stack) == 0:             
                         break
                     current = stack.pop()
         for coordinate in self.pattern:
