@@ -22,7 +22,8 @@ class MazeWindow():
         self.path_visible = False
         self.menu_visible = False
         self.instructions: List[str] = [
-            "(c) color", "(s) solution", "(f) pattern", "(g) regen", "(q) quit"]
+            "(c) color", "(s) solution", "(f) pattern", "(g) regen", "(q) quit"
+            ]
         self.maze: Maze = Maze(
                 [[int('0x' + value, 16) for value in row] for row in """
 9515391539551795151151153
@@ -63,7 +64,8 @@ C545545456C54555545444556""".strip("\n").split("\n")],
                     self._ptr, self._win, self.margin + x,
                     self.margin + y, color)
 
-    def draw_maze_walls(self, width: int, height: int, row: List[List[int]]) -> None:
+    def draw_maze_walls(
+            self, width: int, height: int, row: List[List[int]]) -> None:
         """Draws the maze on the instance window"""
 
         for x in range(0, width):
@@ -124,7 +126,7 @@ C545545456C54555545444556""".strip("\n").split("\n")],
                     self._m.mlx_pixel_put(
                         self._ptr, self._win,
                         x + x_offset, y + y_offset, self.fg_color)
-                elif code == 42:  # 0xF:
+                elif code == 0xF:
                     self._m.mlx_pixel_put(
                             self._ptr, self._win,
                             x + x_offset, y + y_offset, self.hl_color)
@@ -134,22 +136,22 @@ C545545456C54555545444556""".strip("\n").split("\n")],
         accordingly to the maze/window size"""
 
         if not self.menu_visible:
-            
             # check if there is enough to show instructions in line:
             space = width * self.cell_size
-            length = sum(len(i) for i in self.instructions) * 10 + 3 * len(self.instructions) + 10
+            instructions = ((" | ").join(self.instructions))
+            length = len(instructions) * 10 + 10
 
             if space >= length:
                 self._m.mlx_string_put(
                     self._ptr, self._win,
                     self.margin + self.wall_size + (space - length) // 2,
-                    height * self.cell_size + self.margin + self.wall_size + 10,
-                    0xffcccccc, " | ".join(self.instructions))
+                    height * self.cell_size + self.margin + self.wall_size + 9,
+                    0xffcccccc, instructions)
             else:
                 self._m.mlx_string_put(
                     self._ptr, self._win,
-                    self.margin + self.wall_size + (space - length) // 2,
-                    height * self.cell_size + self.margin + self.wall_size + 10,
+                    self.margin + self.wall_size,
+                    height * self.cell_size + self.margin + self.wall_size + 9,
                     0xffcccccc, "(m) menu")
         else:
             self._m.mlx_string_put(
