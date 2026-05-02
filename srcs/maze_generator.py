@@ -159,12 +159,12 @@ class MazeGenerator:
         current: Tuple[int, int] = self.entry
         options: List[Tuple[int, int]]
         spins: Callable = lambda: 1 if self.perfect else 2
+        visited: set[Tuple[int, int]] = set()
         if self.seed is not None:
             random.seed(self.seed)
         for spin in range(spins()):
             if spin == 1:
                 current = self.entry
-                visited: set[Tuple[int, int]] = set()
                 stack = []
                 if self.seed:
                     random.seed(self.seed + 5)
@@ -181,11 +181,37 @@ class MazeGenerator:
                     if next == self.exit:
                         break
                 else:
-                    if len(stack) == 0:             
+                    if len(stack) == 0:
                         break
                     current = stack.pop()
-            for coordinate in self.pattern:
-                self.maze[coordinate[0]][coordinate[1]] = 0xf
+        # New cicle
+        closed_cells: List[Tuple[int, int]] = []
+        while True:
+            closed_cells = [(x, y) for y, row in enumerate(self.maze)
+                            for x, val in enumerate(row) if val == 0xf]
+            if len(closed_cells) == 0:
+                break
+            visited = set()
+            current = random.choice(closed_cells)
+            stack = []
+            exit_random: Tuple[int, int] = random.choice(closed_cells)
+            while True:
+                options = self.__isvalid(current, 1)
+                visited.add(current)
+                options = [o for o in options if o not in visited]
+                if len(options) > 0:
+                    next = random.choice(options)
+                    self.__opening_walls(current, next)
+                    stack.append(current)
+                    current = next
+                    if next == exit_random:
+                        break
+                else:
+                    if len(stack) == 0:
+                        break
+                    current = stack.pop()
+        for coordinate in self.pattern:
+            self.maze[coordinate[0]][coordinate[1]] = 0xf
 
     def bfs(self) -> None:
         fifo: deque = deque()
@@ -207,7 +233,7 @@ class MazeGenerator:
                 fifo.append((x, y - 1))
             if self.maze[y][x] & 0x4 == 0:
                 fifo.append((x, y + 1))
-            
+
 # 1. Sacar celda de la cola
 # DONE
 
