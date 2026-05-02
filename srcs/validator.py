@@ -94,6 +94,8 @@ class Validator():
             except (ValueError, SyntaxError) as e:
                 raise ValueError(
                         f"Wrong value for {key} coordinates ({e})")
+        if output_data["entry"] == output_data["exit"]:
+            raise ValueError("ENTRY and EXIT must be different!")
 
         # checks that output filename is valid:
         output_data["output_file"] = input_data["OUTPUT_FILE"]
