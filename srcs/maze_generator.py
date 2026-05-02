@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 try:
     from typing import Tuple, List, Optional, Dict
     from collections.abc import Callable
@@ -50,10 +51,11 @@ class MazeGenerator:
             pattern_xy.append((start_for[1] + i, start_for[0]))
             pattern_xy.append((start_to[1] + i, start_to[0]))
             pattern_xy.append((start_to[1] - i, start_to[0] + 1))
-            pattern_xy.append((start_for[1] - i, start_for[0] - 1))
+            pattern_xy.append((start_for[1] - i, start_for[0] - 2))
             if i == 2:
                 pattern_xy.append((start_to[1] + i, start_to[0] + 1))
                 pattern_xy.append((start_to[1] - i, start_to[0]))
+        pattern_xy.append((start_for[1], start_for[0] - 1))
         if entry_test in pattern_xy or exit_test in pattern_xy:
             if start_for[1] - 2 > 1 and direction != 2:
                 self.__pattern(offseth - 1, offsetw, 1)
@@ -182,20 +184,14 @@ class MazeGenerator:
                     if len(stack) == 0:             
                         break
                     current = stack.pop()
-        for coordinate in self.pattern:
-            self.maze[coordinate[0]][coordinate[1]] = 0xf
+            for coordinate in self.pattern:
+                self.maze[coordinate[0]][coordinate[1]] = 0xf
 
     def bfs(self) -> None:
         fifo: deque = deque()
         visited: set[Tuple[int, int]] = set()
         parents: Dict[Tuple[int, int], Tuple[int, int]] = {}
-        exit_cell: Tuple[int, int] = (0, 0)
         current: Tuple[int, int] = self.entry
-        if ((0 in self.exit) or (self.width - 1 in self.exit)
-                or (self.height - 1 in self.exit)):
-            exit_cell = self.__isvalid(self.exit)[0]
-        else:
-            exit_cell = self.exit
         fifo.append(self.entry)
         while True:
             x, y = fifo.popleft()
