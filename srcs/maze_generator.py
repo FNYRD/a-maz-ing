@@ -173,20 +173,25 @@ class MazeGenerator:
                 if spin == 1:
                     visited.add(current)
                     options = [o for o in options if o not in visited]
+                if current == self.exit:
+                    options = []
                 if len(options) > 0:
                     next = random.choice(options)
                     self.__opening_walls(current, next)
                     stack.append(current)
                     current = next
                     if next == self.exit:
-                        break
+                        pass  # break
                 else:
                     if len(stack) == 0:
                         break
                     current = stack.pop()
+
         # New cicle
         closed_cells: List[Tuple[int, int]] = []
         while True:
+            break  # Just checking if another cicle is needed
+
             closed_cells = [(x, y) for y, row in enumerate(self.maze)
                             for x, val in enumerate(row) if val == 0xf]
             if len(closed_cells) == 0:
