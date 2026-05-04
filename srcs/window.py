@@ -185,7 +185,6 @@ C545545456C54555545444556""".strip("\n").split("\n")],
 
     def generate(self) -> None:
         self._generator.generate()
-        self._generator.dfs()
         self.maze.rows = self._generator.maze
         self.draw_maze()
 

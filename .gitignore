@@ -4,3 +4,5 @@ __pycache__/
 .flake8_cache/
 context.md
 .DS_Store
+tempCodeRunnerFile.py
+srcs/teste

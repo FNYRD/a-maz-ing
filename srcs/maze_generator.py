@@ -30,9 +30,10 @@ class MazeGenerator:
         self.seed: Optional[int] = seed
         self.maze: List[List[int]] = []
         self.pattern: List[Tuple[int, int]] = []
+        self.solution: List[Tuple[int, int]] = []
 
-    def __pattern(self, offseth: int = 0, offsetw: int = 0,
-                  direction: int = 0) -> None:
+    def _pattern(self, offseth: int = 0, offsetw: int = 0,
+                 direction: int = 0) -> None:
         """This function change the cell's value to 42 to
         print the 42 pattern"""
         if self.width <= 10 >= self.height:
@@ -58,13 +59,13 @@ class MazeGenerator:
         pattern_xy.append((start_for[1], start_for[0] - 1))
         if entry_test in pattern_xy or exit_test in pattern_xy:
             if start_for[1] - 2 > 1 and direction != 2:
-                self.__pattern(offseth - 1, offsetw, 1)
+                self._pattern(offseth - 1, offsetw, 1)
             elif start_for[1] + 2 < self.height and direction != 1:
-                self.__pattern(offseth + 1, offsetw, 2)
+                self._pattern(offseth + 1, offsetw, 2)
             elif start_for[0] - 2 > 1 and direction != 4:
-                self.__pattern(offseth, offsetw - 1, 3)
+                self._pattern(offseth, offsetw - 1, 3)
             elif start_for[0] + 2 < self.width and direction != 3:
-                self.__pattern(offseth, offsetw + 1, 4)
+                self._pattern(offseth, offsetw + 1, 4)
             else:
                 raise MazeTooSmallError("Maze's size is too small "
                                         "for displaying the 42 "
@@ -74,14 +75,9 @@ class MazeGenerator:
             self.maze[coordinate[0]][coordinate[1]] = 42
         self.pattern = pattern_xy
 
-    def generate(self) -> None:
-        self.maze = [[0xf for _ in range(self.width)]
-                     for _ in range(self.height)]
-        self.__pattern()
-
-    def __narrow_corridor(self, position: Tuple[int, int],
-                          options:
-                          List[Tuple[int, int]]) -> List[Tuple[int, int]]:
+    def _narrow_corridor(self, position: Tuple[int, int],
+                         options:
+                         List[Tuple[int, int]]) -> List[Tuple[int, int]]:
         xp, yp = position
         lateral: bool = ((self.maze[yp][xp] & 0x2 == 0)
                          and (self.maze[yp][xp] & 0x8 == 0))
@@ -106,8 +102,8 @@ class MazeGenerator:
                     to_return.append(option)
         return to_return
 
-    def __isvalid(self, position: Tuple[int, int],
-                  flag: int = 0) -> List[Tuple[int, int]]:
+    def _isvalid(self, position: Tuple[int, int],
+                 flag: int = 0) -> List[Tuple[int, int]]:
         """This function will populate the options list with all
         the valid cells to access, adapted to each case."""
         x, y = position
@@ -125,10 +121,10 @@ class MazeGenerator:
         if ((self.width - 1 >= x + 1) and (0 <= y <= self.height - 1)
                 and (condition(self.maze[y][x + 1]))):
             options.append((x + 1, y))
-        return self.__narrow_corridor(position, options)
+        return self._narrow_corridor(position, options)
 
-    def __opening_walls(self, current: Tuple[int, int],
-                        next: Tuple[int, int]) -> None:
+    def _opening_walls(self, current: Tuple[int, int],
+                       next: Tuple[int, int]) -> None:
         """This function will calculate which wall must be open depending
         on the move between the cells."""
         cx, cy = current
@@ -148,7 +144,7 @@ class MazeGenerator:
             self.maze[ny][nx] &= ~0x2
             self.maze[cy][cx] &= ~0x8
 
-    def dfs(self) -> None:
+    def _dfs(self) -> None:
         """This algorithm will open radomly the walls till
         find a path from entry to exit"""
         if len(self.maze) == 0:
@@ -169,7 +165,7 @@ class MazeGenerator:
                 if self.seed:
                     random.seed(self.seed + 5)
             while True:
-                options = self.__isvalid(current, spin)
+                options = self._isvalid(current, spin)
                 if spin == 1:
                     visited.add(current)
                     options = [o for o in options if o not in visited]
@@ -177,7 +173,7 @@ class MazeGenerator:
                     options = []
                 if len(options) > 0:
                     next = random.choice(options)
-                    self.__opening_walls(current, next)
+                    self._opening_walls(current, next)
                     stack.append(current)
                     current = next
                     if next == self.exit:
@@ -187,45 +183,20 @@ class MazeGenerator:
                         break
                     current = stack.pop()
 
-        # New cicle
-        closed_cells: List[Tuple[int, int]] = []
-        while True:
-            break  # Just checking if another cicle is needed
-
-            closed_cells = [(x, y) for y, row in enumerate(self.maze)
-                            for x, val in enumerate(row) if val == 0xf]
-            if len(closed_cells) == 0:
-                break
-            visited = set(list(visited)[:len(visited) // 2])
-            current = random.choice(closed_cells)
-            stack = []
-            exit_random: Tuple[int, int] = random.choice(closed_cells)
-            while True:
-                options = self.__isvalid(current, 1)
-                visited.add(current)
-                options = [o for o in options if o not in visited]
-                if len(options) > 0:
-                    next = random.choice(options)
-                    self.__opening_walls(current, next)
-                    stack.append(current)
-                    current = next
-                    if next == exit_random:
-                        break
-                else:
-                    if len(stack) == 0:
-                        break
-                    current = stack.pop()
-        for coordinate in self.pattern:
-            self.maze[coordinate[0]][coordinate[1]] = 0xf
-
-    def bfs(self) -> None:
+    def _bfs(self) -> List[Tuple[int, int]]:
         fifo: deque = deque()
         visited: set[Tuple[int, int]] = set()
         parents: Dict[Tuple[int, int], Tuple[int, int]] = {}
-        current: Tuple[int, int] = self.entry
         fifo.append(self.entry)
+        visited.add(self.entry)
+        path: List[Tuple[int, int]] = []
+        last: Tuple[int, int] = self.exit
         while True:
             x, y = fifo.popleft()
+            if (x, y) == self.exit:
+                path.append(self.exit)
+                break
+
             if self.maze[y][x] & 0x2 == 0:
                 if (x + 1, y) not in visited:
                     visited.add((x + 1, y))
@@ -233,48 +204,78 @@ class MazeGenerator:
                     parents[(x + 1, y)] = (x, y)
 
             if self.maze[y][x] & 0x8 == 0:
-                fifo.append((x - 1, y))
+                if (x - 1, y) not in visited:
+                    visited.add((x - 1, y))
+                    fifo.append((x - 1, y))
+                    parents[(x - 1, y)] = (x, y)
+
             if self.maze[y][x] & 0x1 == 0:
-                fifo.append((x, y - 1))
+                if ((x, y - 1)) not in visited:
+                    visited.add((x, y - 1))
+                    fifo.append((x, y - 1))
+                    parents[(x, y - 1)] = (x, y)
+
             if self.maze[y][x] & 0x4 == 0:
-                fifo.append((x, y + 1))
+                if ((x, y + 1)) not in visited:
+                    visited.add((x, y + 1))
+                    fifo.append((x, y + 1))
+                    parents[(x, y + 1)] = (x, y)
 
-# 1. Sacar celda de la cola
-# DONE
+        while True:
+            last = parents[last]
+            path.append(last)
+            if last == self.entry:
+                break
+        path.reverse()
+        return path
 
-# 2. Ver vecinos accesibles
-# Los vecinos quizas los puedo ver creando un flag nueva para que solo pase por celdas que no
-# estan cerradas
-        # lateral: bool = ((self.maze[yp][xp] & 0x2 == 0)
-        #                  and (self.maze[yp][xp] & 0x8 == 0))
-        # vertical: bool = ((self.maze[yp][xp] & 0x1 == 0)
-        #                   and (self.maze[yp][xp] & 0x4 == 0))
-
-# 3. Para cada vecino no visitado:
-#    - Marcar como visitado
-#    - Guardar de dónde viene (padre)
-#    - Añadir a la cola
-
-# 4. Repetir hasta llegar a la salida
+    def generate(self) -> None:
+        self.maze = [[0xf for _ in range(self.width)]
+                     for _ in range(self.height)]
+        self._pattern()
+        self._dfs()
+        self.solution = self._bfs()
 
 
 def main() -> None:
-    maze = MazeGenerator(25, 25, (0, 0), (10, 10), True)
+    maze = MazeGenerator(25, 25, (0, 0), (10, 10), True, 20)
     try:
-        # print("WITHOUT DFS")
-        # for row in maze.maze:
-        #     print(" ".join(f"{cell:2}" for cell in row))
-        # print("\nWITH DFS")
-
         maze.generate()
-        maze.dfs()
-        for row in maze.maze:
-            print(" ".join(f"{cell:2}" for cell in row))
     except MazeTooSmallError as e:
         print(f"Error {e}")
 
 
 if __name__ == "__main__":
     main()
-# FALTA:
-# Revisar como queda el laberinto con perfect en terminos visuales
+
+
+# # New cicle
+# closed_cells: List[Tuple[int, int]] = []
+# while True:
+#     break  # Just checking if another cicle is needed
+
+#     closed_cells = [(x, y) for y, row in enumerate(self.maze)
+#                     for x, val in enumerate(row) if val == 0xf]
+#     if len(closed_cells) == 0:
+#         break
+#     visited = set(list(visited)[:len(visited) // 2])
+#     current = random.choice(closed_cells)
+#     stack = []
+#     exit_random: Tuple[int, int] = random.choice(closed_cells)
+#     while True:
+#         options = self.__isvalid(current, 1)
+#         visited.add(current)
+#         options = [o for o in options if o not in visited]
+#         if len(options) > 0:
+#             next = random.choice(options)
+#             self.__opening_walls(current, next)
+#             stack.append(current)
+#             current = next
+#             if next == exit_random:
+#                 break
+#         else:
+#             if len(stack) == 0:
+#                 break
+#             current = stack.pop()
+# for coordinate in self.pattern:
+#     self.maze[coordinate[0]][coordinate[1]] = 0xf
