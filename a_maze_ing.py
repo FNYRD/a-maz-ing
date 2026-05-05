@@ -24,6 +24,7 @@ def main() -> None:
         print("Configuration Error:", e)
         exit(1)
     manager.show_maze()
+    manager.write_maze_file()
 
 
 if __name__ == "__main__":
