@@ -182,6 +182,8 @@ class MazeGenerator:
                     if len(stack) == 0:
                         break
                     current = stack.pop()
+        for coordinate in self.pattern:
+             self.maze[coordinate[0]][coordinate[1]] = 0xf
 
     def _bfs(self) -> List[Tuple[int, int]]:
         fifo: deque = deque()

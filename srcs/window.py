@@ -88,6 +88,27 @@ C545545456C54555545444556""".strip("\n").split("\n")],
                     + self.wall_size,
                     color)
 
+    def translate_path(self, coords: List[Tuple[int, int]]) -> None:
+        """Receives a list of coordinates por the path and translates it into
+        a string of directions (NESW)"""
+        print(coords)
+
+        path: str = ""
+        for i in range(0, len(coords) - 1):
+            a: Tuple[int, int] = coords[i]
+            b: Tuple[int, int] = coords[i + 1]
+            if a[0] < b[0]:
+                path += "E"
+            elif a[0] > b[0]:
+                path += "W"
+            elif a[1] > b[1]:
+                path += "N"
+            elif a[1] < b[1]:
+                path += "S"
+
+        print(path)
+        return path
+
     def draw_path(self, start: Tuple[int, int], path: str, color: int) -> None:
         """Draws the path given as direction instructions (NESW)
         omitting the edges"""
@@ -186,6 +207,7 @@ C545545456C54555545444556""".strip("\n").split("\n")],
     def generate(self) -> None:
         self._generator.generate()
         self.maze.rows = self._generator.maze
+        self.maze.path = self.translate_path(self._generator.solution)
         self.draw_maze()
 
     def render(self) -> None:
@@ -254,12 +276,13 @@ C545545456C54555545444556""".strip("\n").split("\n")],
 
         # Draw the maze:
         self.paint_bg(maze.width, maze.height)
-        self.draw_maze_walls(maze.width, maze.height, maze.rows)
+        self.generate()
+#        self.draw_maze_walls(maze.width, maze.height, maze.rows)
 
         # Draw start and exit:
-        self.draw_single_block(maze.start, 0xff00ff00)
-        self.draw_single_block(maze.exit, 0xffff0000)
-        self.draw_path(maze.start, maze.path, 0xff888888)
+#        self.draw_single_block(maze.start, 0xff00ff00)
+#        self.draw_single_block(maze.exit, 0xffff0000)
+#        self.draw_path(maze.start, maze.path, 0xff888888)
 
         # Write instructions for user interaction:
         self.draw_instructions(maze.width, maze.height)
