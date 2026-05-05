@@ -183,7 +183,7 @@ class MazeGenerator:
                         break
                     current = stack.pop()
         for coordinate in self.pattern:
-             self.maze[coordinate[0]][coordinate[1]] = 0xf
+            self.maze[coordinate[0]][coordinate[1]] = 0xf
 
     def _bfs(self) -> List[Tuple[int, int]]:
         fifo: deque = deque()
@@ -240,7 +240,7 @@ class MazeGenerator:
 
 
 def main() -> None:
-    maze = MazeGenerator(25, 25, (0, 0), (10, 10), True, 20)
+    maze = MazeGenerator(25, 25, (0, 0), (10, 10), False, 20)
     try:
         maze.generate()
     except MazeTooSmallError as e:
@@ -249,35 +249,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
-
-# # New cicle
-# closed_cells: List[Tuple[int, int]] = []
-# while True:
-#     break  # Just checking if another cicle is needed
-
-#     closed_cells = [(x, y) for y, row in enumerate(self.maze)
-#                     for x, val in enumerate(row) if val == 0xf]
-#     if len(closed_cells) == 0:
-#         break
-#     visited = set(list(visited)[:len(visited) // 2])
-#     current = random.choice(closed_cells)
-#     stack = []
-#     exit_random: Tuple[int, int] = random.choice(closed_cells)
-#     while True:
-#         options = self.__isvalid(current, 1)
-#         visited.add(current)
-#         options = [o for o in options if o not in visited]
-#         if len(options) > 0:
-#             next = random.choice(options)
-#             self.__opening_walls(current, next)
-#             stack.append(current)
-#             current = next
-#             if next == exit_random:
-#                 break
-#         else:
-#             if len(stack) == 0:
-#                 break
-#             current = stack.pop()
-# for coordinate in self.pattern:
-#     self.maze[coordinate[0]][coordinate[1]] = 0xf
