@@ -17,7 +17,8 @@ class MazeManager():
         path: str = self._window.maze.path
         m_entry: Tuple[int, int] = self._window.maze.start
         m_exit: Tuple[int, int] = self._window.maze.exit
-        output: List[str] = [''.join(f"{value:X}" for value in row) for row in maze]
+        output: List[str] = [
+            ''.join(f"{value:X}" for value in row) for row in maze]
 
         try:
             with open(self._output_file, "w") as of:

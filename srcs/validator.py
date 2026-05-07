@@ -21,9 +21,6 @@ class ConfigParser():
 
                     if '=' in line:
                         key, value = line.split("=", 1)
-
-                        # are we accepting spaces??????????????????????????????
-                        # RE: we are, we're avoiding it with your .strip btw
                         config_data[key.strip()] = value.strip()
                     else:
                         raise SyntaxError(f"wrong syntax in line [{line_num}]")
@@ -112,5 +109,12 @@ class Validator():
         else:
             raise ValueError(
                     "PERFECT only accepts boolean values (TRUE/FALSE)")
+
+        # verifies if seed is an int:
+        if input_data["SEED"]:
+            try:
+                output_data["seed"] = int(input_data["SEED"])
+            except ValueError as e:
+                raise ValueError(f"Wrong 'SEED' value ({e})")
 
         return output_data

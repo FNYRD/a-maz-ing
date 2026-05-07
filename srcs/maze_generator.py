@@ -164,7 +164,7 @@ class MazeGenerator:
                 stack = []
                 if self.seed is not None:
                     random.seed(self.seed + 5)
-            limit: int = int((self.width * self.height) * 0.10)  #
+            limit: int = int((self.width * self.height) * 0.30)  #
             while True:
                 options = self._isvalid(current, spin)
                 if spin == 1:
@@ -272,13 +272,17 @@ class MazeGenerator:
         e = e // 2
         v = len(visited) - 1
         print(f"Conexo = {v == ((self.height * self.width) - 16)}")
-        print(f"Perfect Argument = {self.perfect}\nPerfect validator = {e == v}")
+        print(
+            f"Perfect Argument = {self.perfect}\nPerfect validator = {e == v}")
         print(f"Comply = {self.perfect == (e == v)}")
 
     def generate(self) -> None:
         self.maze = [[0xf for _ in range(self.width)]
                      for _ in range(self.height)]
-        self._pattern()
+        try:
+            self._pattern()
+        except MazeTooSmallError as e:
+            print(e)
         self._dfs()
         self.solution = self._bfs()
         self.complying()
@@ -302,7 +306,8 @@ if __name__ == "__main__":
 
 # verificar y demostrar que el laberinto es perfecto o imperfecto
 
-# Verificar que sea conexo Creando un BFS que verifique el acceso a todas las celdas 
+# Verificar que sea conexo Creando un BFS que verifique el acceso a todas
+# las celdas
 # Que sea E = V - 1
 # E = Verificar todos los bits de una celda y lo que no este en cero se suma
 # V = width * height - 1
