@@ -188,11 +188,12 @@ class MazeGenerator:
                     current = stack.pop()
                 limit -= 1
         options = self._isvalid(self.exit, 1)
-        for cell in options:
-            second_door = self.maze[self.exit[1]][self.exit[0]]
-            self._opening_walls(self.exit, cell)
-            if second_door != self.maze[self.exit[1]][self.exit[0]]:
-                break
+        if not self.perfect:
+            for cell in options:
+                second_door = self.maze[self.exit[1]][self.exit[0]]
+                self._opening_walls(self.exit, cell)
+                if second_door != self.maze[self.exit[1]][self.exit[0]]:
+                    break
         for coordinate in self.pattern:
             self.maze[coordinate[0]][coordinate[1]] = 0xf
 
