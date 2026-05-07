@@ -18,39 +18,25 @@ class MazeWindow():
         self.hl_color: int = 0xff00ffff
         self.margin: int = 10
         self.cell_size: int = 20
+        if self.cell_size * config["width"] < 140:
+            self.cell_size = 140 // config["width"]
+        if (self.cell_size * config["height"] < 140
+            and config["height"] < config["width"]):
+            self.cell_size = 140 // config["height"]
         self.wall_size: int = 4
         self.path_visible = False
         self.menu_visible = False
         self.instructions: List[str] = [
             "(c) color", "(s) solution", "(f) pattern", "(g) regen", "(q) quit"
             ]
+        self._generator.generate()
         self.maze: Maze = Maze(
-                [[int('0x' + value, 16) for value in row] for row in """
-9515391539551795151151153
-EBABAE812853C1412BA812812
-96A8416A84545412AC4282C2A
-C3A83816A9395384453A82D02
-96842A852AC07AAD13A8283C2
-C1296C43AAB83AA92AA8686BA
-92E853968428444682AC12902
-AC3814452FA83FFF82C52C42A
-85684117AFC6857FAC1383D06
-C53AD043AFFFAFFF856AA8143
-91441294297FAFD501142C6BA
-AA912AC3843FAFFF82856D52A
-842A8692A92B8517C4451552A
-816AC384468285293917A9542
-C416928513C443A828456C3BA
-91416AA92C393A82801553AAA
-A81292AA814682C6A8693C6AA
-A8442C6C2C1168552C16A9542
-86956951692C1455416928552
-C545545456C54555545444556""".strip("\n").split("\n")],
+                self._generator.maze,
                 config["width"],
                 config["height"],
                 config["entry"],
                 config["exit"],
-                "SWSESWSESWSSSEESEEENEESESEESSSEEESSSEEENNENEE")
+                self.translate_path(self._generator.solution))
 
     def paint_bg(self, width: int, height: int,
                  color: int = 0) -> None:
@@ -237,21 +223,25 @@ C545545456C54555545444556""".strip("\n").split("\n")],
             # 's' to show/hide solution path:
             if keynum == 115:
                 if self.path_visible:
-                    self.draw_path(maze.start, maze.path, self.bg_color)
+                    self.draw_path(
+                            self.maze.start, self.maze.path, self.bg_color)
                     self.path_visible = False
                 else:
-                    self.draw_path(maze.start, maze.path, 0xff888888)
+                    self.draw_path(
+                            self.maze.start, self.maze.path, 0xff888888)
                     self.path_visible = True
 
             # 'c' to change walls color:
             if keynum == 99:
                 self.fg_color = Color.get_random_color()
-                self.draw_maze_walls(maze.width, maze.height, maze.rows)
+                self.draw_maze_walls(
+                        self.maze.width, self.maze.height, self.maze.rows)
 
             # 'f' to change pattern color:
             if keynum == 102:
                 self.hl_color = Color.get_random_color()
-                self.draw_maze_walls(maze.width, maze.height, maze.rows)
+                self.draw_maze_walls(
+                        self.maze.width, self.maze.height, self.maze.rows)
 
             # 'g' to regenerate:
             if keynum == 103:
@@ -259,33 +249,24 @@ C545545456C54555545444556""".strip("\n").split("\n")],
 
         def close_window(stuff: Any) -> None:
             """Captures ClientMessage events (WM_DELETE_WINDOW)"""
-            print(stuff)
             self._m.mlx_destroy_window(self._ptr, self._win)
             self._m.mlx_release(self._ptr)
-
-        maze = self.maze
 
         # Creating window with maze size:
         self._win = self._m.mlx_new_window(
             self._ptr,
-            self.cell_size * maze.width + 2 * self.margin + self.wall_size,
-            self.cell_size * maze.height + 2 * self.margin + self.wall_size
+            self.cell_size * self.maze.width + 2 * self.margin + self.wall_size,
+            self.cell_size * self.maze.height + 2 * self.margin + self.wall_size
             + 30,
             "A_Maze_Ing!")
         self._m.mlx_clear_window(self._ptr, self._win)
 
         # Draw the maze:
-        self.paint_bg(maze.width, maze.height)
-        self.generate()
-#        self.draw_maze_walls(maze.width, maze.height, maze.rows)
-
-        # Draw start and exit:
-#        self.draw_single_block(maze.start, 0xff00ff00)
-#        self.draw_single_block(maze.exit, 0xffff0000)
-#        self.draw_path(maze.start, maze.path, 0xff888888)
+        self.paint_bg(self.maze.width, self.maze.height)
+        self.draw_maze()
 
         # Write instructions for user interaction:
-        self.draw_instructions(maze.width, maze.height)
+        self.draw_instructions(self.maze.width, self.maze.height)
 
         # Set hooks to capture events:
         self._m.mlx_hook(self._win, 33, 0, close_window, ["close window"])

@@ -279,7 +279,10 @@ class MazeGenerator:
     def generate(self) -> None:
         self.maze = [[0xf for _ in range(self.width)]
                      for _ in range(self.height)]
-        self._pattern()
+        try:
+            self._pattern()
+        except MazeTooSmallError as e:
+            print(e)
         self._dfs()
         self.solution = self._bfs()
         self.complying()
