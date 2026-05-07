@@ -162,8 +162,9 @@ class MazeGenerator:
             if spin == 1:
                 current = self.entry
                 stack = []
-                if self.seed:
+                if self.seed is not None:
                     random.seed(self.seed + 5)
+            limit: int = int((self.width * self.height) * 0.10)  #
             while True:
                 options = self._isvalid(current, spin)
                 if spin == 1:
@@ -173,15 +174,19 @@ class MazeGenerator:
                     options = []
                 if len(options) > 0:
                     next = random.choice(options)
-                    self._opening_walls(current, next)
+                    if spin == 1 and limit < 1:  #
+                        self._opening_walls(current, next)  #
+                        limit = int((self.width * self.height) * 0.50)  #
+                    if spin == 0:
+                        self._opening_walls(current, next)
                     stack.append(current)
                     current = next
-                    if next == self.exit:
-                        pass  # break
                 else:
                     if len(stack) == 0:
                         break
                     current = stack.pop()
+                limit -= 1  #
+
         for coordinate in self.pattern:
             self.maze[coordinate[0]][coordinate[1]] = 0xf
 
@@ -240,7 +245,7 @@ class MazeGenerator:
 
 
 def main() -> None:
-    maze = MazeGenerator(25, 25, (0, 0), (10, 10), False, 20)
+    maze = MazeGenerator(30, 30, (0, 0), (10, 10), False)
     try:
         maze.generate()
     except MazeTooSmallError as e:
@@ -249,3 +254,17 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
+# POR HACER:
+
+# Hacer que el imperfecto no quede tan agujereado DONE
+
+# verificar y demostrar que el laberinto es perfecto o imperfecto
+
+# Verificar que sea conexo Creando un BFS que se verifique el acceso a todas las celdas 
+# Que sea E = V - 1
+# E = Verificar todos los bits de una celda y lo que no este en cero se suma
+# V = width * height - 1
+
+# Crear el algoritmo Wilson
