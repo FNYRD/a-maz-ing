@@ -176,7 +176,7 @@ class MazeGenerator:
                 if len(options) > 0:
                     next = random.choice(options)
                     if spin == 1 and limit < 1:
-                        self._opening_walls(current, next)  #
+                        self._opening_walls(current, next)
                         limit = int((self.width * self.height) * 0.50)
                     if spin == 0:
                         self._opening_walls(current, next)
@@ -242,6 +242,43 @@ class MazeGenerator:
                 break
         path.reverse()
         return path
+    
+    def _wilson(self) -> None:
+        self._opening_walls(self.entry, random.choice(self._isvalid(self.entry)))
+        current: Tuple[int, int] = self.entry
+        next: Tuple[int, int]
+        path: List[Tuple[int, int]] = [self.entry]
+        index: int = 0
+        fifteen: List[Tuple[int, int]] = [(0, 0)]
+        while len(fifteen) > 0:
+            fifteen = [(x, y) for y, fila in enumerate(self.maze)
+                    for x, cell in enumerate(fila) if cell == 15]
+            if len(fifteen) == 0:
+                break
+            options = self._isvalid(current, 1)
+            if len(options) == 0:
+                break
+            next = random.choice(options)
+            if next not in path:
+                path.append(next)
+
+                if ((self.maze[next[1]][next[0]] != 15) or
+                    (next == self.exit)):
+                    for i in range(len(path) - 1):
+                        self._opening_walls(path[i],path[i + 1])
+                    path = []
+                    if len(fifteen) == 0:
+                        break
+                    current = random.choice(fifteen)
+                    path.append(current)
+                else:
+                    current = next
+                    
+            else:
+                index = path.index(next)
+                path = path[0:index + 1]
+                current = path[len(path) - 1]
+
 
     def complying(self) -> None:
         fifo: deque = deque()
@@ -290,13 +327,14 @@ class MazeGenerator:
             self._pattern()
         except MazeTooSmallError as e:
             print(e)
-        self._dfs()
-        self.solution = self._bfs()
-        self.complying()
+        # self._dfs()
+        self._wilson()
+        # self.solution = self._bfs()
+        # self.complying()
 
 
 def main() -> None:
-    maze = MazeGenerator(30, 30, (0, 0), (10, 10), True)
+    maze = MazeGenerator(11, 11, (0, 0), (9, 9), True)
     try:
         maze.generate()
     except MazeTooSmallError as e:
