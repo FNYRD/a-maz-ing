@@ -156,6 +156,7 @@ class MazeGenerator:
         options: List[Tuple[int, int]]
         spins: Callable = lambda: 1 if self.perfect else 2
         visited: set[Tuple[int, int]] = set()
+        second_door: int = 0
         if self.seed is not None:
             random.seed(self.seed)
         for spin in range(spins()):
@@ -164,7 +165,7 @@ class MazeGenerator:
                 stack = []
                 if self.seed is not None:
                     random.seed(self.seed + 5)
-            limit: int = int((self.width * self.height) * 0.30)  #
+            limit: int = int((self.width * self.height) * 0.30)
             while True:
                 options = self._isvalid(current, spin)
                 if spin == 1:
@@ -174,9 +175,9 @@ class MazeGenerator:
                     options = []
                 if len(options) > 0:
                     next = random.choice(options)
-                    if spin == 1 and limit < 1:  #
+                    if spin == 1 and limit < 1:
                         self._opening_walls(current, next)  #
-                        limit = int((self.width * self.height) * 0.50)  #
+                        limit = int((self.width * self.height) * 0.50)
                     if spin == 0:
                         self._opening_walls(current, next)
                     stack.append(current)
@@ -185,8 +186,13 @@ class MazeGenerator:
                     if len(stack) == 0:
                         break
                     current = stack.pop()
-                limit -= 1  #
-
+                limit -= 1
+        options = self._isvalid(self.exit, 1)
+        for cell in options:
+            second_door = self.maze[self.exit[1]][self.exit[0]]
+            self._opening_walls(self.exit, cell)
+            if second_door != self.maze[self.exit[1]][self.exit[0]]:
+                break
         for coordinate in self.pattern:
             self.maze[coordinate[0]][coordinate[1]] = 0xf
 
