@@ -235,6 +235,44 @@ class MazeGenerator:
                 break
         path.reverse()
         return path
+    def complying(self) -> None:
+        fifo: deque = deque()
+        visited: set[Tuple[int, int]] = set()
+        fifo.append(self.entry)
+        visited.add(self.entry)
+        e: int = 0
+        v: int = 0
+        while len(fifo) > 0:
+            x, y = fifo.popleft()
+
+            if self.maze[y][x] & 0x2 == 0:
+                if (x + 1, y) not in visited:
+                    visited.add((x + 1, y))
+                    fifo.append((x + 1, y))
+                e += 1
+
+            if self.maze[y][x] & 0x8 == 0:
+                if (x - 1, y) not in visited:
+                    visited.add((x - 1, y))
+                    fifo.append((x - 1, y))
+                e += 1
+
+            if self.maze[y][x] & 0x1 == 0:
+                if ((x, y - 1)) not in visited:
+                    visited.add((x, y - 1))
+                    fifo.append((x, y - 1))
+                e += 1
+
+            if self.maze[y][x] & 0x4 == 0:
+                if ((x, y + 1)) not in visited:
+                    visited.add((x, y + 1))
+                    fifo.append((x, y + 1))
+                e += 1
+        e = e // 2
+        v = len(visited) - 1
+        print(f"Conexo = {v == ((self.height * self.width) - 16)}")
+        print(f"Perfect Argument = {self.perfect}\nPerfect validator = {e == v}")
+        print(f"Comply = {self.perfect == (e == v)}")
 
     def generate(self) -> None:
         self.maze = [[0xf for _ in range(self.width)]
@@ -242,6 +280,7 @@ class MazeGenerator:
         self._pattern()
         self._dfs()
         self.solution = self._bfs()
+        self.complying()
 
 
 def main() -> None:
@@ -262,7 +301,7 @@ if __name__ == "__main__":
 
 # verificar y demostrar que el laberinto es perfecto o imperfecto
 
-# Verificar que sea conexo Creando un BFS que se verifique el acceso a todas las celdas 
+# Verificar que sea conexo Creando un BFS que verifique el acceso a todas las celdas 
 # Que sea E = V - 1
 # E = Verificar todos los bits de una celda y lo que no este en cero se suma
 # V = width * height - 1
