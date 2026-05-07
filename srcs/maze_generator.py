@@ -235,6 +235,7 @@ class MazeGenerator:
                 break
         path.reverse()
         return path
+
     def complying(self) -> None:
         fifo: deque = deque()
         visited: set[Tuple[int, int]] = set()
@@ -284,7 +285,7 @@ class MazeGenerator:
 
 
 def main() -> None:
-    maze = MazeGenerator(30, 30, (0, 0), (10, 10), False)
+    maze = MazeGenerator(30, 30, (0, 0), (10, 10), True)
     try:
         maze.generate()
     except MazeTooSmallError as e:
