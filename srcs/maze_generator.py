@@ -262,7 +262,7 @@ class MazeGenerator:
             if next not in path:
                 path.append(next)
 
-                if ((self.maze[next[1]][next[0]] != 15) or
+                if (((self.maze[next[1]][next[0]] != 15) and path[0] != self.entry) or
                     (next == self.exit)):
                     for i in range(len(path) - 1):
                         self._opening_walls(path[i],path[i + 1])
@@ -278,6 +278,8 @@ class MazeGenerator:
                 index = path.index(next)
                 path = path[0:index + 1]
                 current = path[len(path) - 1]
+        for coordinate in self.pattern:
+            self.maze[coordinate[0]][coordinate[1]] = 0xf
 
 
     def complying(self) -> None:
@@ -329,8 +331,8 @@ class MazeGenerator:
             print(e)
         # self._dfs()
         self._wilson()
-        # self.solution = self._bfs()
-        # self.complying()
+        self.solution = self._bfs()
+        self.complying()
 
 
 def main() -> None:
