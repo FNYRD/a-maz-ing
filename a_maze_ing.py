@@ -19,7 +19,7 @@ def main() -> None:
     validator: Validator = Validator()
     try:
         manager: MazeManager = MazeManager(
-                validator.validate_config(config_data))
+            validator.validate_config(config_data))
     except (KeyError, ValueError) as e:
         print("Configuration Error:", e)
         exit(1)

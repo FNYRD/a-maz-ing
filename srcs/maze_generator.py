@@ -32,7 +32,7 @@ class MazeGenerator:
         self.maze: List[List[int]] = []
         self.pattern: List[Tuple[int, int]] = []
         self.solution: List[Tuple[int, int]] = []
-        self.alt_algorithm: bool = alt_algorithm
+        self.alt_algorithm: Optional[bool] = alt_algorithm
 
     def _pattern(self, offseth: int = 0, offsetw: int = 0,
                  direction: int = 0) -> None:
@@ -80,29 +80,33 @@ class MazeGenerator:
     def _narrow_corridor(self, position: Tuple[int, int],
                          options:
                          List[Tuple[int, int]]) -> List[Tuple[int, int]]:
-        xp, yp = position
-        lateral: bool = ((self.maze[yp][xp] & 0x2 == 0)
-                         and (self.maze[yp][xp] & 0x8 == 0))
-        vertical: bool = ((self.maze[yp][xp] & 0x1 == 0)
-                          and (self.maze[yp][xp] & 0x4 == 0))
-        to_return: List[Tuple[int, int]] = []
-        for option in options:
-            xo, yo = option
-            if yp != yo:
-                if (((self.maze[yo][xo] & 0x2 == 0)
-                     and (self.maze[yo][xo] & 0x8 == 0))
-                        and lateral):
-                    pass
-                else:
-                    to_return.append(option)
-            elif xp != xo:
-                if (((self.maze[yo][xo] & 0x1 == 0)
-                     and (self.maze[yo][xo] & 0x4 == 0))
-                        and vertical):
-                    pass
-                else:
-                    to_return.append(option)
-        return to_return
+        try:
+            xp, yp = position
+            lateral: bool = ((self.maze[yp][xp] & 0x2 == 0)
+                             and (self.maze[yp][xp] & 0x8 == 0))
+            vertical: bool = ((self.maze[yp][xp] & 0x1 == 0)
+                              and (self.maze[yp][xp] & 0x4 == 0))
+            to_return: List[Tuple[int, int]] = []
+            for option in options:
+                xo, yo = option
+                if yp != yo:
+                    if (((self.maze[yo][xo] & 0x2 == 0)
+                        and (self.maze[yo][xo] & 0x8 == 0))
+                            and lateral):
+                        pass
+                    else:
+                        to_return.append(option)
+                elif xp != xo:
+                    if (((self.maze[yo][xo] & 0x1 == 0)
+                        and (self.maze[yo][xo] & 0x4 == 0))
+                            and vertical):
+                        pass
+                    else:
+                        to_return.append(option)
+            return to_return
+        except IndexError as e:
+            print(f"Probably the options list is empty. Error: {e}")
+            return to_return
 
     def _isvalid(self, position: Tuple[int, int],
                  flag: int = 0) -> List[Tuple[int, int]]:
@@ -129,6 +133,9 @@ class MazeGenerator:
                        next: Tuple[int, int]) -> None:
         """This function will calculate which wall must be open depending
         on the move between the cells."""
+        if len(current) == 0 or len(next) == 0:
+            raise ValueError(
+                "You're passing empty arfuments to _opening_walls function")
         cx, cy = current
         nx, ny = next
         if cy != ny:
@@ -148,7 +155,8 @@ class MazeGenerator:
 
     def _dfs(self) -> None:
         """This algorithm will open radomly the walls till
-        find a path from entry to exit"""
+        find a path from entry to exit and then, will connect
+        the other cells in the manze"""
         if len(self.maze) == 0:
             raise MazeNotExistsError(
                 "You cannot creat a maze with dimensions 0x0")
@@ -200,57 +208,63 @@ class MazeGenerator:
             self.maze[coordinate[0]][coordinate[1]] = 0xf
 
     def _bfs(self) -> List[Tuple[int, int]]:
-        fifo: deque = deque()
-        visited: set[Tuple[int, int]] = set()
-        parents: Dict[Tuple[int, int], Tuple[int, int]] = {}
-        fifo.append(self.entry)
-        visited.add(self.entry)
-        path: List[Tuple[int, int]] = []
-        last: Tuple[int, int] = self.exit
-        while True:
-            x, y = fifo.popleft()
-            if (x, y) == self.exit:
-                path.append(self.exit)
-                break
+        """This algorithm will find the shortest
+        path from point A (entry) to point B (exit)"""
+        try:
+            fifo: deque = deque()
+            visited: set[Tuple[int, int]] = set()
+            parents: Dict[Tuple[int, int], Tuple[int, int]] = {}
+            fifo.append(self.entry)
+            visited.add(self.entry)
+            path: List[Tuple[int, int]] = []
+            last: Tuple[int, int] = self.exit
+            while True:
+                x, y = fifo.popleft()
+                if (x, y) == self.exit:
+                    path.append(self.exit)
+                    break
 
-            if self.maze[y][x] & 0x2 == 0:
-                if (x + 1, y) not in visited:
-                    visited.add((x + 1, y))
-                    fifo.append((x + 1, y))
-                    parents[(x + 1, y)] = (x, y)
+                if self.maze[y][x] & 0x2 == 0:
+                    if (x + 1, y) not in visited:
+                        visited.add((x + 1, y))
+                        fifo.append((x + 1, y))
+                        parents[(x + 1, y)] = (x, y)
 
-            if self.maze[y][x] & 0x8 == 0:
-                if (x - 1, y) not in visited:
-                    visited.add((x - 1, y))
-                    fifo.append((x - 1, y))
-                    parents[(x - 1, y)] = (x, y)
+                if self.maze[y][x] & 0x8 == 0:
+                    if (x - 1, y) not in visited:
+                        visited.add((x - 1, y))
+                        fifo.append((x - 1, y))
+                        parents[(x - 1, y)] = (x, y)
 
-            if self.maze[y][x] & 0x1 == 0:
-                if ((x, y - 1)) not in visited:
-                    visited.add((x, y - 1))
-                    fifo.append((x, y - 1))
-                    parents[(x, y - 1)] = (x, y)
+                if self.maze[y][x] & 0x1 == 0:
+                    if ((x, y - 1)) not in visited:
+                        visited.add((x, y - 1))
+                        fifo.append((x, y - 1))
+                        parents[(x, y - 1)] = (x, y)
 
-            if self.maze[y][x] & 0x4 == 0:
-                if ((x, y + 1)) not in visited:
-                    visited.add((x, y + 1))
-                    fifo.append((x, y + 1))
-                    parents[(x, y + 1)] = (x, y)
+                if self.maze[y][x] & 0x4 == 0:
+                    if ((x, y + 1)) not in visited:
+                        visited.add((x, y + 1))
+                        fifo.append((x, y + 1))
+                        parents[(x, y + 1)] = (x, y)
 
-        while True:
-            last = parents[last]
-            path.append(last)
-            if last == self.entry:
-                break
-        path.reverse()
-        return path
-    
+            while True:
+                last = parents[last]
+                path.append(last)
+                if last == self.entry:
+                    break
+            path.reverse()
+            return path
+        except Exception as e:
+            print(f"Something went wrong during the BFS Algorithm: {e}")
+            return path
+
     def _wilson(self) -> None:
         """This algorithm will create paths randomly until
         every cell is connected"""
         if self.seed is not None:
             random.seed(self.seed)
-       
+
         fifteen = [(x, y) for y, fila in enumerate(self.maze)
                    for x, cell in enumerate(fila) if cell == 15]
         # we don't want another path starting from exit in a perfect maze:
@@ -261,11 +275,11 @@ class MazeGenerator:
         next: Tuple[int, int]
         path: List[Tuple[int, int]] = [self.entry]
         index: int = 0
-        
+
         while True:
             options = self._isvalid(current, 1)
             # we only want to reach exit in the first pass if perfect
-            if (self.exit in options and path[0] != self.entry 
+            if (self.exit in options and path[0] != self.entry
                     and self.perfect and len(options) > 1):
                 options.remove(self.exit)
 
@@ -273,10 +287,11 @@ class MazeGenerator:
             if next not in path:
                 path.append(next)
 
-                if (((self.maze[next[1]][next[0]] != 15) and path[0] != self.entry) or
-                    (next == self.exit)):
+                if (((self.maze[next[1]][next[0]] != 15)
+                     and path[0] != self.entry) or
+                        (next == self.exit)):
                     for i in range(len(path) - 1):
-                        self._opening_walls(path[i],path[i + 1])
+                        self._opening_walls(path[i], path[i + 1])
                         fifteen.remove(path[i])
                     path = []
                     if len(fifteen) == 0:
@@ -293,7 +308,7 @@ class MazeGenerator:
         for coordinate in self.pattern:
             self.maze[coordinate[0]][coordinate[1]] = 0xf
 
-    def complying(self) -> None:
+    def _complying(self) -> None:
         fifo: deque = deque()
         visited: set[Tuple[int, int]] = set()
         fifo.append(self.entry)
@@ -345,7 +360,7 @@ class MazeGenerator:
         else:
             self._dfs()
         self.solution = self._bfs()
-        self.complying()
+        self._complying()
 
 
 def main() -> None:
@@ -358,18 +373,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
-
-# POR HACER:
-
-# Hacer que el imperfecto no quede tan agujereado DONE
-
-# verificar y demostrar que el laberinto es perfecto o imperfecto
-
-# Verificar que sea conexo Creando un BFS que verifique el acceso a todas
-# las celdas
-# Que sea E = V - 1
-# E = Verificar todos los bits de una celda y lo que no este en cero se suma
-# V = width * height - 1
-
-# Crear el algoritmo Wilson
