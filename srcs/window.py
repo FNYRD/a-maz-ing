@@ -2,8 +2,7 @@ from mlx import Mlx
 from typing import Any, List, Tuple, Dict
 from .maze import Maze
 from .color import Color
-from .maze_generator import MazeGenerator
-
+from mazegen import MazeGenerator
 
 class MazeWindow():
     """Class to contain the maze displaying window"""

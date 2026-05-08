@@ -72,11 +72,11 @@ class MazeGenerator:
                 or (exit_test in to_holes)):
             if start_for[1] - 2 > 1 and direction != 2:
                 self._pattern(offseth - 1, offsetw, 1)
-            elif start_for[1] + 3 < self.height and direction != 1:
+            elif start_for[1] + 2 < self.height - 2 and direction != 1:
                 self._pattern(offseth + 1, offsetw, 2)
             elif start_for[0] - 2 > 1 and direction != 4:
                 self._pattern(offseth, offsetw - 1, 3)
-            elif start_for[0] + 2 < self.width and direction != 3:
+            elif start_for[0] + 2 < self.width - 2 and direction != 3:
                 self._pattern(offseth, offsetw + 1, 4)
             else:
                 raise MazeTooSmallError()
@@ -396,15 +396,3 @@ class MazeGenerator:
             self._dfs()
         self.solution = self._bfs()
         self._complying()
-
-
-def main() -> None:
-    maze = MazeGenerator(11, 11, (1, 2), (7, 6), False)
-    try:
-        maze.generate()
-    except MazeTooSmallError as e:
-        print(f"Error {e}")
-
-
-if __name__ == "__main__":
-    main()
