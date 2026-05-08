@@ -101,14 +101,17 @@ class Validator():
         if len(output_data["output_file"]) > 100:
             raise ValueError("Wrong output filename (too long!)")
 
-        # check for valid boolen values for PERFECT key:
-        if input_data["PERFECT"].upper() == "TRUE":
-            output_data["perfect"] = True
-        elif input_data["PERFECT"].upper() == "FALSE":
-            output_data["perfect"] = False
-        else:
-            raise ValueError(
-                    "PERFECT only accepts boolean values (TRUE/FALSE)")
+        # check for valid boolen values for PERFECT/ALT_ALGORITHM key:
+        for key in ["PERFECT", "ALT_ALGORITHM"]:
+            if key in input_data:
+                print(key)
+                if input_data[key].upper() == "TRUE":
+                    output_data[key.lower()] = True
+                elif input_data[key].upper() == "FALSE":
+                    output_data[key.lower()] = False
+                else:
+                    raise ValueError(
+                            f"{key} only accepts boolean values (TRUE/FALSE)")
 
         # verifies if seed is an int:
         if input_data["SEED"]:

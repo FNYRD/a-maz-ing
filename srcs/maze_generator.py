@@ -22,7 +22,7 @@ class MazeGenerator:
     def __init__(self, width: int, height: int, entry: Tuple[int, int],
                  exit: Tuple[int, int], perfect: bool,
                  seed: Optional[int] = None,
-                 alt_algorithm: Optional[bool] = True) -> None:
+                 alt_algorithm: Optional[bool] = False) -> None:
         self.width: int = width
         self.height: int = height
         self.entry: Tuple[int, int] = entry
