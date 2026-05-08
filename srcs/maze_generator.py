@@ -42,11 +42,16 @@ class MazeGenerator:
             raise MazeTooSmallError("Maze's size is too small "
                                     "for displaying the 42 "
                                     "pattern")
-
         start_for: Tuple[int, int] = (((self.width // 2) - 1) + offsetw,
                                       (self.height // 2) + offseth)
         start_to: Tuple[int, int] = (((self.width // 2) + 1) + offsetw,
                                      (self.height // 2) + offseth)
+        
+        to_holes: List[Tuple[int, int]] = [((self.height // 2) + 1 + offseth,
+                                     ((self.width // 2) + 2) + offsetw),
+                                     (((self.height // 2) - 1) + offseth,
+                                     ((self.width // 2) + 1) + offsetw)]
+        
         entry_test: Tuple[int, int] = (self.entry[1], self.entry[0])
         exit_test: Tuple[int, int] = (self.exit[1], self.exit[0])
         pattern_xy: List[Tuple[int, int]] = []
@@ -59,7 +64,7 @@ class MazeGenerator:
                 pattern_xy.append((start_to[1] + i, start_to[0] + 1))
                 pattern_xy.append((start_to[1] - i, start_to[0]))
         pattern_xy.append((start_for[1], start_for[0] - 1))
-        if entry_test in pattern_xy or exit_test in pattern_xy:
+        if (entry_test in pattern_xy) or (exit_test in pattern_xy) or (entry_test in to_holes) or (exit_test in to_holes):
             if start_for[1] - 2 > 1 and direction != 2:
                 self._pattern(offseth - 1, offsetw, 1)
             elif start_for[1] + 2 < self.height and direction != 1:
@@ -176,7 +181,7 @@ class MazeGenerator:
                 stack = []
                 if self.seed is not None:
                     random.seed(self.seed + 5)
-            limit: int = int((self.width * self.height) * 0.20)
+            limit: int = int((self.width * self.height) * 0.10)
             while True:
                 options = self._isvalid(current, spin)
                 if spin == 1:
@@ -198,13 +203,18 @@ class MazeGenerator:
                         break
                     current = stack.pop()
                 limit -= 1
-        options = self._isvalid(self.exit, 1)
+        
         if not self.perfect:
-            for cell in options:
-                second_door = self.maze[self.exit[1]][self.exit[0]]
-                self._opening_walls(self.exit, cell)
-                if second_door != self.maze[self.exit[1]][self.exit[0]]:
-                    break
+            condicion: Callable = lambda i: self.entry if i == 0 else self.exit
+            location: Tuple[int, int]
+            for i in range(2):
+                location = condicion(i)
+                options = self._isvalid(location, 1)
+                for cell in options:
+                    second_door = self.maze[location[1]][location[0]]
+                    self._opening_walls(location, cell)
+                    if (second_door != self.maze[location[1]][location[0]]):
+                        break
         fifteen = [(x, y) for y, fila in enumerate(self.maze)
                    for x, cell in enumerate(fila) if cell == 15]
         if len(fifteen) > 0:
@@ -379,7 +389,7 @@ class MazeGenerator:
 
 
 def main() -> None:
-    maze = MazeGenerator(11, 11, (1, 2), (8, 6), False)
+    maze = MazeGenerator(11, 11, (1, 2), (7, 6), False)
     try:
         maze.generate()
     except MazeTooSmallError as e:
