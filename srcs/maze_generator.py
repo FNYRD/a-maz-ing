@@ -21,7 +21,8 @@ class MazeGenerator:
 
     def __init__(self, width: int, height: int, entry: Tuple[int, int],
                  exit: Tuple[int, int], perfect: bool,
-                 seed: Optional[int] = None) -> None:
+                 seed: Optional[int] = None,
+                 alt_algorithm: Optional[bool] = True) -> None:
         self.width: int = width
         self.height: int = height
         self.entry: Tuple[int, int] = entry
@@ -31,6 +32,7 @@ class MazeGenerator:
         self.maze: List[List[int]] = []
         self.pattern: List[Tuple[int, int]] = []
         self.solution: List[Tuple[int, int]] = []
+        self.alt_algorithm: bool = alt_algorithm
 
     def _pattern(self, offseth: int = 0, offsetw: int = 0,
                  direction: int = 0) -> None:
@@ -244,20 +246,29 @@ class MazeGenerator:
         return path
     
     def _wilson(self) -> None:
-        self._opening_walls(self.entry, random.choice(self._isvalid(self.entry)))
+        """This algorithm will create paths randomly until
+        every cell is connected"""
+        if self.seed is not None:
+            random.seed(self.seed)
+       
+        fifteen = [(x, y) for y, fila in enumerate(self.maze)
+                   for x, cell in enumerate(fila) if cell == 15]
+        # we don't want another path starting from exit in a perfect maze:
+        if self.perfect:
+            fifteen.remove(self.exit)
+
         current: Tuple[int, int] = self.entry
         next: Tuple[int, int]
         path: List[Tuple[int, int]] = [self.entry]
         index: int = 0
-        fifteen: List[Tuple[int, int]] = [(0, 0)]
-        while len(fifteen) > 0:
-            fifteen = [(x, y) for y, fila in enumerate(self.maze)
-                    for x, cell in enumerate(fila) if cell == 15]
-            if len(fifteen) == 0:
-                break
+        
+        while True:
             options = self._isvalid(current, 1)
-            if len(options) == 0:
-                break
+            # we only want to reach exit in the first pass if perfect
+            if (self.exit in options and path[0] != self.entry 
+                    and self.perfect and len(options) > 1):
+                options.remove(self.exit)
+
             next = random.choice(options)
             if next not in path:
                 path.append(next)
@@ -266,6 +277,7 @@ class MazeGenerator:
                     (next == self.exit)):
                     for i in range(len(path) - 1):
                         self._opening_walls(path[i],path[i + 1])
+                        fifteen.remove(path[i])
                     path = []
                     if len(fifteen) == 0:
                         break
@@ -273,14 +285,13 @@ class MazeGenerator:
                     path.append(current)
                 else:
                     current = next
-                    
             else:
                 index = path.index(next)
                 path = path[0:index + 1]
-                current = path[len(path) - 1]
+                current = path[-1]
+
         for coordinate in self.pattern:
             self.maze[coordinate[0]][coordinate[1]] = 0xf
-
 
     def complying(self) -> None:
         fifo: deque = deque()
@@ -329,8 +340,10 @@ class MazeGenerator:
             self._pattern()
         except MazeTooSmallError as e:
             print(e)
-        # self._dfs()
-        self._wilson()
+        if self.alt_algorithm:
+            self._wilson()
+        else:
+            self._dfs()
         self.solution = self._bfs()
         self.complying()
 
