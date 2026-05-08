@@ -9,7 +9,9 @@ except ImportError as e:
 
 
 class MazeTooSmallError(Exception):
-    pass
+    msg: str = ("Maze's size is too small "
+                  "for displaying the 42 "
+                  "pattern")
 
 
 class MazeNotExistsError(Exception):
@@ -70,16 +72,14 @@ class MazeGenerator:
                 or (exit_test in to_holes)):
             if start_for[1] - 2 > 1 and direction != 2:
                 self._pattern(offseth - 1, offsetw, 1)
-            elif start_for[1] + 2 < self.height and direction != 1:
+            elif start_for[1] + 3 < self.height and direction != 1:
                 self._pattern(offseth + 1, offsetw, 2)
             elif start_for[0] - 2 > 1 and direction != 4:
                 self._pattern(offseth, offsetw - 1, 3)
             elif start_for[0] + 2 < self.width and direction != 3:
                 self._pattern(offseth, offsetw + 1, 4)
             else:
-                raise MazeTooSmallError("Maze's size is too small "
-                                        "for displaying the 42 "
-                                        "pattern")
+                raise MazeTooSmallError()
             return
         for coordinate in pattern_xy:
             self.maze[coordinate[0]][coordinate[1]] = 42
@@ -388,6 +388,8 @@ class MazeGenerator:
             self._pattern()
         except MazeTooSmallError as e:
             print(e)
+        except RecursionError:
+            print(MazeTooSmallError.msg)
         if self.alt_algorithm:
             self._wilson()
         else:

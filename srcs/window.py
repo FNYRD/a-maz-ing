@@ -77,7 +77,6 @@ class MazeWindow():
     def translate_path(self, coords: List[Tuple[int, int]]) -> None:
         """Receives a list of coordinates por the path and translates it into
         a string of directions (NESW)"""
-        print(coords)
 
         path: str = ""
         for i in range(0, len(coords) - 1):
@@ -92,7 +91,6 @@ class MazeWindow():
             elif a[1] < b[1]:
                 path += "S"
 
-        print(path)
         return path
 
     def draw_path(self, start: Tuple[int, int], path: str, color: int) -> None:
