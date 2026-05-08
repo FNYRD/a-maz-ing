@@ -283,7 +283,7 @@ class MazeGenerator:
     def _wilson(self) -> None:
         """This algorithm will create paths randomly until
         every cell is connected"""
-        if self.seed is not None:
+        if self.seed:
             random.seed(self.seed)
         fifteen: List[Tuple[int, int]] = []
         fifteen = [(x, y) for y, fila in enumerate(self.maze)
@@ -297,6 +297,7 @@ class MazeGenerator:
         path: List[Tuple[int, int]] = [self.entry]
         index: int = 0
         extra_path: int = 0 if self.perfect else 1
+        first_path: List[Tuple[int, int]] = []
 
         while True:
             options = self._isvalid(current, 1)
@@ -321,8 +322,11 @@ class MazeGenerator:
                         break
 
                     current = random.choice(fifteen)
+                    if path == first_path:
+                        extra_path = 1
                     # if imperfect, let's create a second path from entry:
                     if extra_path:
+                        first_path = path.copy()
                         extra_path = 0
                         current = self.entry
                     path = []
