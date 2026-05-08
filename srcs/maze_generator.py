@@ -297,15 +297,15 @@ class MazeGenerator:
             if next not in path:
                 path.append(next)
 
-                if (((self.maze[next[1]][next[0]] != 15) and path[0] != self.entry) or
-                    (next == self.exit)):
+                if (((self.maze[next[1]][next[0]] != 15)
+                        and path[0] != self.entry) or (next == self.exit)):
                     for i in range(len(path) - 1):
                         self._opening_walls(path[i], path[i + 1])
                         if path[i] in fifteen:
                             fifteen.remove(path[i])
                     if len(fifteen) == 0:
                         break
-                    
+
                     current = random.choice(fifteen)
                     # if imperfect, let's create a second path from entry:
                     if extra_path:

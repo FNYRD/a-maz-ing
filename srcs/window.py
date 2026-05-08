@@ -21,7 +21,7 @@ class MazeWindow():
         if self.cell_size * config["width"] < 140:
             self.cell_size = 140 // config["width"]
         if (self.cell_size * config["height"] < 140
-            and config["height"] < config["width"]):
+                and config["height"] < config["width"]):
             self.cell_size = 140 // config["height"]
         self.wall_size: int = 4
         self.path_visible = False
@@ -255,9 +255,10 @@ class MazeWindow():
         # Creating window with maze size:
         self._win = self._m.mlx_new_window(
             self._ptr,
-            self.cell_size * self.maze.width + 2 * self.margin + self.wall_size,
-            self.cell_size * self.maze.height + 2 * self.margin + self.wall_size
-            + 30,
+            self.cell_size * self.maze.width + 2 * self.margin
+            + self.wall_size,
+            self.cell_size * self.maze.height + 2 * self.margin
+            + self.wall_size + 30,
             "A_Maze_Ing!")
         self._m.mlx_clear_window(self._ptr, self._win)
 
