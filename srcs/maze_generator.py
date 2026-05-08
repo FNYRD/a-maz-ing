@@ -160,6 +160,7 @@ class MazeGenerator:
         if len(self.maze) == 0:
             raise MazeNotExistsError(
                 "You cannot creat a maze with dimensions 0x0")
+        fifteen: List[Tuple[int, int]] = []
         stack: List[Tuple[int, int]] = []
         next: Tuple[int, int] = (0, 0)
         current: Tuple[int, int] = self.entry
@@ -175,7 +176,7 @@ class MazeGenerator:
                 stack = []
                 if self.seed is not None:
                     random.seed(self.seed + 5)
-            limit: int = int((self.width * self.height) * 0.30)
+            limit: int = int((self.width * self.height) * 0.20)
             while True:
                 options = self._isvalid(current, spin)
                 if spin == 1:
@@ -187,7 +188,7 @@ class MazeGenerator:
                     next = random.choice(options)
                     if spin == 1 and limit < 1:
                         self._opening_walls(current, next)
-                        limit = int((self.width * self.height) * 0.50)
+                        limit = int((self.width * self.height) * 0.30)
                     if spin == 0:
                         self._opening_walls(current, next)
                     stack.append(current)
@@ -204,6 +205,12 @@ class MazeGenerator:
                 self._opening_walls(self.exit, cell)
                 if second_door != self.maze[self.exit[1]][self.exit[0]]:
                     break
+        fifteen = [(x, y) for y, fila in enumerate(self.maze)
+                   for x, cell in enumerate(fila) if cell == 15]
+        if len(fifteen) > 0:
+            for cell in fifteen:
+                self._opening_walls(
+                    cell, random.choice(self._isvalid(cell, 1)))
         for coordinate in self.pattern:
             self.maze[coordinate[0]][coordinate[1]] = 0xf
 
@@ -264,7 +271,7 @@ class MazeGenerator:
         every cell is connected"""
         if self.seed is not None:
             random.seed(self.seed)
-
+        fifteen: List[Tuple[int, int]] = []
         fifteen = [(x, y) for y, fila in enumerate(self.maze)
                    for x, cell in enumerate(fila) if cell == 15]
         # we don't want another path starting from exit in a perfect maze:
@@ -364,7 +371,7 @@ class MazeGenerator:
 
 
 def main() -> None:
-    maze = MazeGenerator(11, 11, (0, 0), (9, 9), True)
+    maze = MazeGenerator(11, 11, (1, 2), (8, 6), False)
     try:
         maze.generate()
     except MazeTooSmallError as e:
