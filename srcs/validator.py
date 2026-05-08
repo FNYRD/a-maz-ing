@@ -104,7 +104,6 @@ class Validator():
         # check for valid boolen values for PERFECT/ALT_ALGORITHM key:
         for key in ["PERFECT", "ALT_ALGORITHM"]:
             if key in input_data:
-                print(key)
                 if input_data[key].upper() == "TRUE":
                     output_data[key.lower()] = True
                 elif input_data[key].upper() == "FALSE":

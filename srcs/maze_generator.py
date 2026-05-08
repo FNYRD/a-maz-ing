@@ -261,6 +261,7 @@ class MazeGenerator:
         next: Tuple[int, int]
         path: List[Tuple[int, int]] = [self.entry]
         index: int = 0
+        extra_path: int = 0 if self.perfect else 1
         
         while True:
             options = self._isvalid(current, 1)
@@ -268,6 +269,8 @@ class MazeGenerator:
             if (self.exit in options and path[0] != self.entry 
                     and self.perfect and len(options) > 1):
                 options.remove(self.exit)
+            if not self.perfect:
+                self._narrow_corridor(current, options)
 
             next = random.choice(options)
             if next not in path:
@@ -277,11 +280,17 @@ class MazeGenerator:
                     (next == self.exit)):
                     for i in range(len(path) - 1):
                         self._opening_walls(path[i],path[i + 1])
-                        fifteen.remove(path[i])
-                    path = []
+                        if path[i] in fifteen:
+                            fifteen.remove(path[i])
                     if len(fifteen) == 0:
                         break
+                    
                     current = random.choice(fifteen)
+                    # if imperfect, let's create a second path from entry:
+                    if extra_path:
+                        extra_path = 0
+                        current = self.entry
+                    path = []
                     path.append(current)
                 else:
                     current = next
