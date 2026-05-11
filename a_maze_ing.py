@@ -5,6 +5,8 @@ from srcs.manager import MazeManager
 
 
 def main() -> None:
+    """Program init: read command line arguments and show usage if wrong"""
+
     # check if we have a config filename
     if len(sys.argv) != 2:
         print(f"Usage: python {sys.argv[0]} [config file]")

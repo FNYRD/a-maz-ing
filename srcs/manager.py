@@ -4,15 +4,20 @@ from .maze import Maze
 
 
 class MazeManager():
-    """Main class to run all the circus"""
+    """Class that show the maze window and save the maze on exit"""
 
     def __init__(self, config_data: Dict[str, Any]) -> None:
+        """Initialize the manager.
+
+        config_data: dictionary containing already validated maze parameters.
+        """
         self._config_data: Dict[str, Any] = config_data
         self._output_file: str = self._config_data.pop("output_file")
         self._window = MazeWindow(self._config_data)
 
     def write_maze_file(self) -> None:
-        """Saves the current maze to a file"""
+        """Save current maze to a text file"""
+
         maze: Maze = self._window.maze.rows
         path: str = self._window.maze.path
         m_entry: Tuple[int, int] = self._window.maze.start
@@ -32,5 +37,6 @@ class MazeManager():
             print(f"Error: failed to write output file ({e})")
 
     def show_maze(self) -> None:
-        """Shows the maze"""
+        """Method to initiate the visual representation of the maze"""
+
         self._window.render()

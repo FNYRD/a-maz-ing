@@ -3,6 +3,8 @@ from enum import IntEnum
 
 
 class Color(IntEnum):
+    """Class containing prefedined color values for the maze."""
+
     # Dark & Moody
     CHARCOAL = 0xFF1a1a1a
     DEEP_NAVY = 0xFF0a1428
@@ -39,4 +41,6 @@ class Color(IntEnum):
 
     @classmethod
     def get_random_color(cls) -> int:
+        """method that returns a random color from the class"""
+
         return random.choice(list(Color))

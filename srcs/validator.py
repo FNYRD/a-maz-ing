@@ -2,13 +2,21 @@ from typing import Dict, Any, Tuple, List
 
 
 class ConfigParser():
-    """Receives a config file, reads it, parses and validates its data."""
+    """Receive a config file, read it and parse its data."""
 
     def __init__(self, config_file: str) -> None:
+        """Initialize the parser.
+
+        config_file: name of the text file containing maze parameters.
+        """
         self.config_file = config_file
 
     def read_config(self) -> Dict[str, str] | None:
-        """Tries to open the config file and returns Key=Value as a Dict"""
+        """Try to open the config file and return Key=Value as a Dict
+
+        Return a dictionary containing the parameters in the config file.
+        Return None on failure to read the file, printing the cause.
+        """
 
         config_data: Dict[str, str] = {}
         try:
@@ -39,15 +47,22 @@ class ConfigParser():
 
 
 class Validator():
-    """Class that handles validation of config data"""
+    """Class to handle validation of config data"""
 
     def validate_config(self, input_data: Dict[str, str]) -> Dict[str, Any]:
-        """Validates the config data provided is valid to run the program,
-        performes all the type conversions required"""
+        """Check if the config data is valid and convert it to right type
+
+        input_data: dicitionary with configuration parameter to validate.
+        Return a dictionary with clean data for maze generator class.
+        If anything fail, raise the correspondeing exception.
+        """
 
         def parse_coords(coord_str: str) -> Tuple[int, int]:
-            """Gets (x,y) coordinates as a string, validates the format,
-            and returns them as a tuple"""
+            """Gets (x,y) coordinates as a string and validates the format
+
+            coord_str: x,y coordinates to parse
+            Returns the coordinates as a tuple, raises an exception on fail
+            """
 
             values: List[str] = coord_str.split(',')
             if len(values) != 2:

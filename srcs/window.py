@@ -4,12 +4,23 @@ from .maze import Maze
 from .color import Color
 from mazegen import MazeGenerator
 
+
 class MazeWindow():
-    """Class to contain the maze displaying window"""
+    """Class to contain the maze displaying window.
+
+    This class is the core of the visual representation for maze.
+    It istantiates the MazeGenerator, a Maze to contain its data
+    and a minilibx window to visually represent them in an
+    interactive way.
+    """
 
     def __init__(self, config: Dict[str, Any]):
-        self._m = Mlx()
+        """Initiate the maze window and its elements, maze and generator.
+
+        config: dictionary with configuration parameter.
+        """
         self._generator: MazeGenerator = MazeGenerator(**config)
+        self._m = Mlx()
         self._ptr = self._m.mlx_init()
         self._win = None
         self.fg_color: int = 0xeeeeeeff
@@ -39,8 +50,11 @@ class MazeWindow():
 
     def paint_bg(self, width: int, height: int,
                  color: int = 0) -> None:
-        """Gives the maze area a background color (inside margins)"""
+        """Give the maze area a background color (inside margins).
 
+        width: x dimension of the area to paint (in cells).
+        height: y dimension of the area to paint (in cells).
+        """
         if not color:
             color = self.bg_color
         for x in range(0, width * self.cell_size + self.wall_size - 1):
@@ -50,19 +64,25 @@ class MazeWindow():
                     self.margin + y, color)
 
     def draw_maze_walls(
-            self, width: int, height: int, row: List[List[int]]) -> None:
-        """Draws the maze on the instance window"""
+            self, width: int, height: int, rows: List[List[int]]) -> None:
+        """Draw the maze on the instance window.
 
+        width: number of cells in x.
+        height: number of cells in y.
+        rows: actual matrix containing maze data.
+        """
         for x in range(0, width):
             for y in range(0, height):
                 self.draw_cell(
                     self.cell_size * x + self.margin,
-                    self.cell_size * y + self.margin, row[y][x])
+                    self.cell_size * y + self.margin, rows[y][x])
 
     def draw_single_block(self, coords: Tuple[int, int], color: int) -> None:
-        """Paints a single block (space between walls)
-        at the specified position, with the specified color"""
+        """Paint a single block (space between walls) at coords.
 
+        coords: x,y position.
+        color: RGBA mlx specified color to paint the block.
+        """
         for x in range(0, self.cell_size - self.wall_size - 1):
             for y in range(0, self.cell_size - self.wall_size - 1):
                 self._m.mlx_pixel_put(
@@ -73,10 +93,12 @@ class MazeWindow():
                     + self.wall_size,
                     color)
 
-    def translate_path(self, coords: List[Tuple[int, int]]) -> None:
-        """Receives a list of coordinates por the path and translates it into
-        a string of directions (NESW)"""
+    def translate_path(self, coords: List[Tuple[int, int]]) -> str:
+        """Translates path coordinates into a string of directions (NESW).
 
+        coords: list of (x, y) coordinates for maze solution path.
+        Return a sequence of cardinal directions (NESW) from entry to exit.
+        """
         path: str = ""
         for i in range(0, len(coords) - 1):
             a: Tuple[int, int] = coords[i]
@@ -89,13 +111,15 @@ class MazeWindow():
                 path += "N"
             elif a[1] < b[1]:
                 path += "S"
-
         return path
 
-    def draw_path(self, start: Tuple[int, int], path: str, color: int) -> None:
-        """Draws the path given as direction instructions (NESW)
-        omitting the edges"""
+    def draw_path(
+            self, start: Tuple[int, int], path: str, color: int) -> None:
+        """Draw the path given as cardinal instructions (NESW) omitting edges.
 
+        path: the sequence of cardinal directions (NESW) from entry to exit.
+        color: RGBA mlx valid color to paint the path.
+        """
         x, y = start
         for step in path[:-1]:
             if step == "N":
@@ -109,8 +133,16 @@ class MazeWindow():
             self.draw_single_block((x, y), color)
 
     def draw_cell(self, x_offset: int, y_offset: int, code: int) -> None:
-        """Recieves a position to draw a cell and a hex value coding for
-        open and closed walls"""
+        """Draw the walls for a cell in the specified position.
+
+        The hex value of the cell represents open (0) and closed (1) walls
+        in binary coding, following a clockwise logic:
+           Ex. 1010 means North and South closed, East and West open.
+        
+        x_offset: cell horizontal position.
+        y_offset: cell vertical position.
+        code: hex value (0-F) coding the walls. 
+        """
 
         for x in range(0, self.cell_size + self.wall_size - 1):
             for y in range(0, self.cell_size + self.wall_size - 1):
@@ -136,9 +168,14 @@ class MazeWindow():
                             x + x_offset, y + y_offset, self.hl_color)
 
     def draw_instructions(self, width: int, height: int) -> None:
-        """Prints the instructions for user interaction, distributing them
-        accordingly to the maze/window size"""
+        """Print the instructions for user interaction.
 
+        Check the best way to distribute instructions (bottom row / menu)
+        accordingly to the maze/window size and print them.
+
+        width: available space to write in x (in cells).
+        height: maze height in cells (vertical offset for instructions).
+        """
         if not self.menu_visible:
             # check if there is enough to show instructions in line:
             space = width * self.cell_size
@@ -171,10 +208,14 @@ class MazeWindow():
                     0xffcccccc, ins)
 
     def show_menu(self) -> None:
+        """Paint a transparence layer on top of the maze for menu writting."""
+
         self.paint_bg(self.maze.width, self.maze.height, 0xCC000000)
         self.draw_instructions(self.maze.width, self.maze.height)
 
     def draw_maze(self) -> None:
+        """Draw all maze elements in order."""
+
         # Draw the maze:
         self.paint_bg(self.maze.width, self.maze.height)
         self.draw_maze_walls(self.maze.width, self.maze.height, self.maze.rows)
@@ -188,18 +229,28 @@ class MazeWindow():
             self.draw_path(self.maze.start, self.maze.path, 0xff888888)
 
     def generate(self) -> None:
+        """Call generator to create a new maze and show it."""
+
         self._generator.generate()
         self.maze.rows = self._generator.maze
         self.maze.path = self.translate_path(self._generator.solution)
         self.draw_maze()
 
     def render(self) -> None:
-        """Creates the window and sets user interactions"""
+        """Create the window and set user interactions.
+
+        Main method for the class, call mlx instance to create a window
+        with the appropriate size to show the maze and sets the hooks
+        to capture events allowing user interaction.
+        """
 
         # Setting user interaction:
         def mykey(keynum: int, stuff: Any) -> None:
-            """Captures key release events"""
+            """Capture key release events.
 
+            keynum: code for the released key.
+            stuff: not used (defined by mlx).
+            """
             # 'q' to exit
             if keynum == 113:
                 self._m.mlx_destroy_window(self._ptr, self._win)
@@ -245,11 +296,11 @@ class MazeWindow():
                 self.generate()
 
         def close_window(stuff: Any) -> None:
-            """Captures ClientMessage events (WM_DELETE_WINDOW)"""
+            """Respone for ClientMessage event (WM_DELETE_WINDOW)."""
             self._m.mlx_destroy_window(self._ptr, self._win)
             self._m.mlx_release(self._ptr)
 
-        # Creating window with maze size:
+        # Create window with maze size:
         self._win = self._m.mlx_new_window(
             self._ptr,
             self.cell_size * self.maze.width + 2 * self.margin
