@@ -1,0 +1,16 @@
+pyproject.toml
+mazegen/__init__.py
+mazegen/maze_generator.py
+mazegen.egg-info/PKG-INFO
+mazegen.egg-info/SOURCES.txt
+mazegen.egg-info/dependency_links.txt
+mazegen.egg-info/top_level.txt
+srcs/color.py
+srcs/manager.py
+srcs/maze.py
+srcs/validator.py
+srcs/window.py
+srcs/teste/mlx_CLXV/python/src/mlx/__init__.py
+srcs/teste/mlx_CLXV/python/src/mlx/mlx.py
+srcs/teste/mlx_CLXV/python/src/mlx/test/mlxtest.py
+srcs/teste/mlx_CLXV/python/src/mlx/test/simple_test.py

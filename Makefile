@@ -1,8 +1,8 @@
 install:
 	pip3 install --upgrade pip
 	pip3 install -r requirements.txt
-	python3 -m build
-	pip3 install dist/mazegen-*.whl
+	python3 -m build --wheel --outdir .
+	pip3 install mazegen-*.whl
 
 run:
 	python3 a_maze_ing.py config.txt
