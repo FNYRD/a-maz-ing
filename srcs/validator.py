@@ -63,21 +63,16 @@ class Validator():
             if key not in input_data.keys():
                 raise KeyError(f"Missing requiered configuration value {key}")
 
-        # check if width is valid:
-        try:
-            output_data["width"] = int(input_data["WIDTH"])
-            if output_data["width"] < 2:
-                raise ValueError("Minimal 'WIDTH' value: 2")
-        except ValueError as e:
-            raise ValueError(f"Wrong 'WIDTH' value ({e})")
-
-        # check if height is valid:
-        try:
-            output_data["height"] = int(input_data["HEIGHT"])
-            if output_data["height"] < 2:
-                raise ValueError("Minimal 'HEIGHT' value: 2")
-        except ValueError as e:
-            raise ValueError(f"Wrong 'HEIGHT' value ({e})")
+        # check if width and heigth are valid:
+        for key in required[0:2]:
+            try:
+                output_data[key.lower()] = int(input_data[key])
+                if output_data[key.lower()] < 2:
+                    raise ValueError(f"Minimal {key} value: 2")
+                if output_data[key.lower()] > 50:
+                    raise ValueError(f"Maximun {key} value: 50")
+            except ValueError as e:
+                raise ValueError(f"Wrong {key} value ({e})")
 
         # check if entry and exit coords are valid and parse them into a tuple
         for key in required[2:4]:
