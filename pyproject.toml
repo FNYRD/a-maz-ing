@@ -1,20 +1,18 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "mazegen"
 version = "1.0.0"
-description = ""
+description = "Reusable maze generator module"
 authors = [
-    {name = "Jesus Rosales",email = "jr.jobs.1509@gmail.com"}
+    {name = "Jesus Rosales",email = "jr.jobs.1509@gmail.com"},
+    {name = "Sergio Gabriel Lenti",email = "slenti@student.42porto.com"}
 ]
+readme = "README.md"
 requires-python = ">=3.10"
-dependencies = [
-    "pytest (>=9.0.3,<10.0.0)",
-    "mlx @ ./srcs/mlx-2.2-py3-ubuntu-any.whl"
-]
+dependencies = []
 
-
-[tool.poetry]
-package-mode = false
-
-[build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+[tool.setuptools.packages.find]
+where = ["."]

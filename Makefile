@@ -1,8 +1,11 @@
 install:
-	poetry install
+	pip3 install --upgrade pip
+	pip3 install -r requirements.txt
+	python3 -m build
+	pip3 install dist/mazegen-*.whl
 
 run:
-	poetry run python3 a_maze_ing.py config.txt
+	python3 a_maze_ing.py config.txt
 
 debug:
 	poetry run python3 -m pdb a_maze_ing.py config.txt
@@ -13,15 +16,17 @@ clean:
 	find . -type d -name .flake8_cache -exec rm -rf {} +
 
 lint:
-	flake8 .
+	flake8 --exclude=.venv,mlx .
 	mypy --warn-return-any \
 		 --warn-unused-ignores \
 		 --ignore-missing-imports \
 		 --disallow-untyped-defs \
 		 --check-untyped-defs .
+		 --exclude '^(venv|\.venv|env|mlx)/'
 
 lint-strict:
 	flake8 . --strict
-	mypy . --strict
+	mypy . --strict \
+	--exclude '^(venv|\.venv|env|mlx)/'
 
 .PHONY: install run debug clean lint lint-strict

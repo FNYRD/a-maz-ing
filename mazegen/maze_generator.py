@@ -10,16 +10,17 @@ except ImportError as e:
 
 class MazeTooSmallError(Exception):
     msg: str = ("Maze's size is too small "
-                  "for displaying the 42 "
-                  "pattern")
+                "for displaying the 42 "
+                "pattern")
 
 
 class MazeNotExistsError(Exception):
-    pass
+    msg: str = ("You're trying to excute functions "
+                "realted to a non-existent Maze")
 
 
 class MazeGenerator:
-    """This constructor sets the arguments for the maze creation"""
+    """Generate mazes using DFS or Wilson's algorithm."""
 
     def __init__(self, width: int, height: int, entry: Tuple[int, int],
                  exit: Tuple[int, int], perfect: bool,
@@ -38,8 +39,7 @@ class MazeGenerator:
 
     def _pattern(self, offseth: int = 0, offsetw: int = 0,
                  direction: int = 0) -> None:
-        """This function change the cell's value to 42 to
-        print the 42 pattern"""
+        """Change cells matching the 42 pattern to value 42."""
         if self.width <= 10 >= self.height:
             raise MazeTooSmallError("Maze's size is too small "
                                     "for displaying the 42 "
@@ -88,6 +88,7 @@ class MazeGenerator:
     def _narrow_corridor(self, position: Tuple[int, int],
                          options:
                          List[Tuple[int, int]]) -> List[Tuple[int, int]]:
+        """Ensure corridors remain single-cell wide."""
         try:
             xp, yp = position
             lateral: bool = ((self.maze[yp][xp] & 0x2 == 0)
@@ -118,8 +119,7 @@ class MazeGenerator:
 
     def _isvalid(self, position: Tuple[int, int],
                  flag: int = 0) -> List[Tuple[int, int]]:
-        """This function will populate the options list with all
-        the valid cells to access, adapted to each case."""
+        """Return valid neighbor cells for the given position."""
         x, y = position
         options: List[Tuple[int, int]] = []
         condition: Callable = lambda cell: cell != 42 if flag else cell == 0xf
@@ -139,8 +139,7 @@ class MazeGenerator:
 
     def _opening_walls(self, current: Tuple[int, int],
                        next: Tuple[int, int]) -> None:
-        """This function will calculate which wall must be open depending
-        on the move between the cells."""
+        """Open the walls between two adjacent cells."""
         if len(current) == 0 or len(next) == 0:
             raise ValueError(
                 "You're passing empty arfuments to _opening_walls function")
@@ -162,9 +161,7 @@ class MazeGenerator:
             self.maze[cy][cx] &= ~0x8
 
     def _dfs(self) -> None:
-        """This algorithm will open radomly the walls till
-        find a path from entry to exit and then, will connect
-        the other cells in the manze"""
+        """Build maze paths using randomized depth-first search."""
         if len(self.maze) == 0:
             raise MazeNotExistsError(
                 "You cannot creat a maze with dimensions 0x0")
@@ -217,7 +214,8 @@ class MazeGenerator:
                     second_door = self.maze[location[1]][location[0]]
                     self._opening_walls(location, cell)
                     if ((location == self.exit) and
-                        (second_door != self.maze[location[1]][location[0]])):
+                            (second_door !=
+                             self.maze[location[1]][location[0]])):
                         break
         fifteen = [(x, y) for y, fila in enumerate(self.maze)
                    for x, cell in enumerate(fila) if cell == 15]
@@ -229,8 +227,7 @@ class MazeGenerator:
             self.maze[coordinate[0]][coordinate[1]] = 0xf
 
     def _bfs(self) -> List[Tuple[int, int]]:
-        """This algorithm will find the shortest
-        path from point A (entry) to point B (exit)"""
+        """Return the shortest path from entry to exit."""
         try:
             fifo: deque = deque()
             visited: set[Tuple[int, int]] = set()
@@ -281,8 +278,7 @@ class MazeGenerator:
             return path
 
     def _wilson(self) -> None:
-        """This algorithm will create paths randomly until
-        every cell is connected"""
+        """Build maze paths using Wilson's loop-erased random walk."""
         if self.seed:
             random.seed(self.seed)
         fifteen: List[Tuple[int, int]] = []
@@ -342,6 +338,7 @@ class MazeGenerator:
             self.maze[coordinate[0]][coordinate[1]] = 0xf
 
     def _complying(self) -> None:
+        """Validate maze connectivity and whether it is perfect."""
         fifo: deque = deque()
         visited: set[Tuple[int, int]] = set()
         fifo.append(self.entry)
@@ -382,6 +379,7 @@ class MazeGenerator:
         print(f"Comply = {self.perfect == (e == v)}")
 
     def generate(self) -> None:
+        """Generate the maze and compute the solution."""
         self.maze = [[0xf for _ in range(self.width)]
                      for _ in range(self.height)]
         try:
@@ -395,4 +393,3 @@ class MazeGenerator:
         else:
             self._dfs()
         self.solution = self._bfs()
-        self._complying()
