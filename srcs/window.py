@@ -1,8 +1,14 @@
-from mlx import Mlx
 from typing import Any, List, Tuple, Dict
 from .maze import Maze
 from .color import Color
 from mazegen import MazeGenerator
+import sys
+try:
+    from mlx import Mlx
+except ImportError as e:
+    print(e)
+    print("Please install mlx graphic library")
+    sys.exit(1)
 
 
 class MazeWindow():
@@ -320,4 +326,6 @@ class MazeWindow():
         # Set hooks to capture events:
         self._m.mlx_hook(self._win, 33, 0, close_window, ["close window"])
         self._m.mlx_key_hook(self._win, mykey, ["key pressed"])
+
+        # Rendering loop:
         self._m.mlx_loop(self._ptr)
