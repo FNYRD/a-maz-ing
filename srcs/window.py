@@ -54,6 +54,26 @@ class MazeWindow():
             config["exit"],
             self.translate_path(self._generator.solution))
 
+    def translate_path(self, coords: List[Tuple[int, int]]) -> str:
+        """Translates path coordinates into a string of directions (NESW).
+
+        coords: list of (x, y) coordinates for maze solution path.
+        Return a sequence of cardinal directions (NESW) from entry to exit.
+        """
+        path: str = ""
+        for i in range(0, len(coords) - 1):
+            a: Tuple[int, int] = coords[i]
+            b: Tuple[int, int] = coords[i + 1]
+            if a[0] < b[0]:
+                path += "E"
+            elif a[0] > b[0]:
+                path += "W"
+            elif a[1] > b[1]:
+                path += "N"
+            elif a[1] < b[1]:
+                path += "S"
+        return path
+
     def paint_bg(self, width: int, height: int,
                  color: int = 0) -> None:
         """Give the maze area a background color (inside margins).
@@ -98,26 +118,6 @@ class MazeWindow():
                     y + (coords[1]) * self.cell_size + self.margin
                     + self.wall_size,
                     color)
-
-    def translate_path(self, coords: List[Tuple[int, int]]) -> str:
-        """Translates path coordinates into a string of directions (NESW).
-
-        coords: list of (x, y) coordinates for maze solution path.
-        Return a sequence of cardinal directions (NESW) from entry to exit.
-        """
-        path: str = ""
-        for i in range(0, len(coords) - 1):
-            a: Tuple[int, int] = coords[i]
-            b: Tuple[int, int] = coords[i + 1]
-            if a[0] < b[0]:
-                path += "E"
-            elif a[0] > b[0]:
-                path += "W"
-            elif a[1] > b[1]:
-                path += "N"
-            elif a[1] < b[1]:
-                path += "S"
-        return path
 
     def draw_path(
             self, start: Tuple[int, int], path: str, color: int) -> None:
@@ -219,28 +219,38 @@ class MazeWindow():
         self.paint_bg(self.maze.width, self.maze.height, 0xCC000000)
         self.draw_instructions(self.maze.width, self.maze.height)
 
-    def draw_maze(self) -> None:
-        """Draw all maze elements in order."""
+    def draw_maze(self, maze: Maze) -> None:
+        """Draw all maze elements in order.
+
+        maze: class containing maze parameters
+        """
+        if self.menu_visible:
+            return
+
+        # Clear window:
+        self._m.mlx_clear_window(self._ptr, self._win)
 
         # Draw the maze:
-        self.paint_bg(self.maze.width, self.maze.height)
-        self.draw_maze_walls(self.maze.width, self.maze.height, self.maze.rows)
+        self.paint_bg(maze.width, maze.height)
+        self.draw_maze_walls(maze.width, maze.height, maze.rows)
 
         # Draw start and exit:
-        self.draw_single_block(self.maze.start, 0xff00ff00)
-        self.draw_single_block(self.maze.exit, 0xffff0000)
+        self.draw_single_block(maze.start, 0xff00ff00)
+        self.draw_single_block(maze.exit, 0xffff0000)
 
         # Draw solution path:
         if self.path_visible:
-            self.draw_path(self.maze.start, self.maze.path, 0xff888888)
+            self.draw_path(maze.start, maze.path, 0xff888888)
+
+        # Write instructions for user interaction:
+        self.draw_instructions(maze.width, maze.height)
 
     def generate(self) -> None:
-        """Call generator to create a new maze and show it."""
+        """Call generator to create a new maze."""
 
         self._generator.generate()
         self.maze.rows = self._generator.maze
         self.maze.path = self.translate_path(self._generator.solution)
-        self.draw_maze()
 
     def render(self) -> None:
         """Create the window and set user interactions.
@@ -266,7 +276,6 @@ class MazeWindow():
             if keynum in [65307, 115, 99, 102, 103]:
                 if self.menu_visible:
                     self.menu_visible = False
-                    self.draw_maze()
 
             # 'm' to show menu:
             if keynum == 109:
@@ -288,14 +297,10 @@ class MazeWindow():
             # 'c' to change walls color:
             if keynum == 99:
                 self.fg_color = Color.get_random_color()
-                self.draw_maze_walls(
-                    self.maze.width, self.maze.height, self.maze.rows)
 
             # 'f' to change pattern color:
             if keynum == 102:
                 self.hl_color = Color.get_random_color()
-                self.draw_maze_walls(
-                    self.maze.width, self.maze.height, self.maze.rows)
 
             # 'g' to regenerate:
             if keynum == 103:
@@ -316,16 +321,10 @@ class MazeWindow():
             "A_Maze_Ing!")
         self._m.mlx_clear_window(self._ptr, self._win)
 
-        # Draw the maze:
-        self.paint_bg(self.maze.width, self.maze.height)
-        self.draw_maze()
-
-        # Write instructions for user interaction:
-        self.draw_instructions(self.maze.width, self.maze.height)
-
         # Set hooks to capture events:
         self._m.mlx_hook(self._win, 33, 0, close_window, ["close window"])
         self._m.mlx_key_hook(self._win, mykey, ["key pressed"])
 
         # Rendering loop:
+        self._m.mlx_loop_hook(self._ptr, self.draw_maze, self.maze)
         self._m.mlx_loop(self._ptr)
