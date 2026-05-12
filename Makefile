@@ -1,5 +1,5 @@
 install:
-	pip3 install --upgrade pip
+	pip3 install --upgrade pip setuptools wheel
 	pip3 install -r requirements.txt
 	python3 -m build --wheel --outdir .
 	pip3 install mazegen-*.whl
