@@ -18,16 +18,17 @@ clean:
 	find . -type d -name build -exec rm -rf {} +
 
 lint:
-	flake8 --exclude=.venv,mlx --filename='*.py' .
+	flake8 --exclude=.venv,mlx,build --filename='*.py' .
 	mypy --warn-return-any \
 		 --warn-unused-ignores \
 		 --ignore-missing-imports \
 		 --disallow-untyped-defs \
 		 --check-untyped-defs \
-		 --exclude '^(venv|\.venv|env|mlx)/' .
+		 --exclude '^(venv|\.venv|env|mlx|build)/' .
 
 lint-strict:
-	flake8 --filename='*.py' .
-	mypy . --strict
+	flake8 --exclude=.venv,mlx,build --filename='*.py' .
+	mypy  --strict \
+		--exclude '^(venv|\.venv|env|mlx|build)/' .
 
 .PHONY: install run debug clean lint lint-strict
