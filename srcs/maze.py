@@ -13,13 +13,13 @@ class Maze():
                  path: str
                  ) -> None:
         """Initialize the maze with the requiered parameters
-        
+
         maze: a matrix of int values representing the walls per cell.
         width: number of cells in x.
         height: number of cells in y.
         start_coord: x,y coordinates of maze's entrance.
         exit_coord: x,y coordinates of maze's exit.
-        path: sequence of cardinal directions (NESW) to follow from entrance 
+        path: sequence of cardinal directions (NESW) to follow from entrance
         to exit to find the maze's shortest (or unique) solution.
         """
         self.rows: List[List[int]] = maze

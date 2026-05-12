@@ -1,6 +1,5 @@
 from typing import Dict, Any, List, Tuple
 from .window import MazeWindow
-from .maze import Maze
 
 
 class MazeManager():
@@ -18,7 +17,7 @@ class MazeManager():
     def write_maze_file(self) -> None:
         """Save current maze to a text file"""
 
-        maze: Maze = self._window.maze.rows
+        maze: list[list[int]] = self._window.maze.rows
         path: str = self._window.maze.path
         m_entry: Tuple[int, int] = self._window.maze.start
         m_exit: Tuple[int, int] = self._window.maze.exit

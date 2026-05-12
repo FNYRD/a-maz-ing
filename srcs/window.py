@@ -38,15 +38,15 @@ class MazeWindow():
         self.menu_visible = False
         self.instructions: List[str] = [
             "(c) color", "(s) solution", "(f) pattern", "(g) regen", "(q) quit"
-            ]
+        ]
         self._generator.generate()
         self.maze: Maze = Maze(
-                self._generator.maze,
-                config["width"],
-                config["height"],
-                config["entry"],
-                config["exit"],
-                self.translate_path(self._generator.solution))
+            self._generator.maze,
+            config["width"],
+            config["height"],
+            config["entry"],
+            config["exit"],
+            self.translate_path(self._generator.solution))
 
     def paint_bg(self, width: int, height: int,
                  color: int = 0) -> None:
@@ -138,10 +138,10 @@ class MazeWindow():
         The hex value of the cell represents open (0) and closed (1) walls
         in binary coding, following a clockwise logic:
            Ex. 1010 means North and South closed, East and West open.
-        
+
         x_offset: cell horizontal position.
         y_offset: cell vertical position.
-        code: hex value (0-F) coding the walls. 
+        code: hex value (0-F) coding the walls.
         """
 
         for x in range(0, self.cell_size + self.wall_size - 1):
@@ -164,8 +164,8 @@ class MazeWindow():
                         x + x_offset, y + y_offset, self.fg_color)
                 elif code == 0xF:
                     self._m.mlx_pixel_put(
-                            self._ptr, self._win,
-                            x + x_offset, y + y_offset, self.hl_color)
+                        self._ptr, self._win,
+                        x + x_offset, y + y_offset, self.hl_color)
 
     def draw_instructions(self, width: int, height: int) -> None:
         """Print the instructions for user interaction.
@@ -272,24 +272,24 @@ class MazeWindow():
             if keynum == 115:
                 if self.path_visible:
                     self.draw_path(
-                            self.maze.start, self.maze.path, self.bg_color)
+                        self.maze.start, self.maze.path, self.bg_color)
                     self.path_visible = False
                 else:
                     self.draw_path(
-                            self.maze.start, self.maze.path, 0xff888888)
+                        self.maze.start, self.maze.path, 0xff888888)
                     self.path_visible = True
 
             # 'c' to change walls color:
             if keynum == 99:
                 self.fg_color = Color.get_random_color()
                 self.draw_maze_walls(
-                        self.maze.width, self.maze.height, self.maze.rows)
+                    self.maze.width, self.maze.height, self.maze.rows)
 
             # 'f' to change pattern color:
             if keynum == 102:
                 self.hl_color = Color.get_random_color()
                 self.draw_maze_walls(
-                        self.maze.width, self.maze.height, self.maze.rows)
+                    self.maze.width, self.maze.height, self.maze.rows)
 
             # 'g' to regenerate:
             if keynum == 103:
