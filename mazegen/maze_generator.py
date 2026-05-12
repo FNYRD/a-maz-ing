@@ -9,23 +9,68 @@ except ImportError as e:
 
 
 class MazeTooSmallError(Exception):
+    """Exception raised when the maze is too small for the 42 pattern, or when
+    entry/exit positions leave no valid placement for it.
+
+    Attributes
+    ----------
+    msg : str
+        Default error message describing the size constraint.
+    """
+
     msg: str = ("Maze's size is too small "
                 "for displaying the 42 "
                 "pattern")
 
 
 class MazeNotExistsError(Exception):
+    """Exception raised when a maze operation is attempted before the maze is generated.
+
+    Attributes
+    ----------
+    msg : str
+        Default error message indicating the maze does not exist yet.
+    """
+
     msg: str = ("You're trying to excute functions "
                 "realted to a non-existent Maze")
 
 
 class MazeGenerator:
-    """Generate mazes using DFS or Wilson's algorithm."""
+    """Generate mazes using DFS or Wilson's algorithm.
+
+    Supports perfect and imperfect mazes, optional seeding for reproducibility,
+    and embeds a hidden '42' pattern in the maze grid.
+
+    Attributes
+    ----------
+    width : int
+        Number of columns in the maze.
+    height : int
+        Number of rows in the maze.
+    entry : Tuple[int, int]
+        (x, y) coordinates of the maze entry point.
+    exit : Tuple[int, int]
+        (x, y) coordinates of the maze exit point.
+    perfect : bool
+        Whether the maze is perfect (no loops, single solution).
+    seed : int, optional
+        Seed for the random number generator.
+    maze : List[List[int]]
+        2D grid representing the maze state.
+    pattern : List[Tuple[int, int]]
+        Coordinates of the 42 pattern cells.
+    solution : List[Tuple[int, int]]
+        Shortest path from entry to exit, computed by the BFS algorithm.
+    alt_algorithm : bool, optional
+        If True, uses Wilson's algorithm instead of DFS.
+    """
 
     def __init__(self, width: int, height: int, entry: Tuple[int, int],
                  exit: Tuple[int, int], perfect: bool,
                  seed: Optional[int] = None,
                  alt_algorithm: Optional[bool] = False) -> None:
+        """Initialize maze dimensions, entry/exit points, and generation options."""
         self.width: int = width
         self.height: int = height
         self.entry: Tuple[int, int] = entry
@@ -39,7 +84,26 @@ class MazeGenerator:
 
     def _pattern(self, offseth: int = 0, offsetw: int = 0,
                  direction: int = 0) -> None:
-        """Change cells matching the 42 pattern to value 42."""
+        """Embed the '42' pattern into the maze grid.
+
+        Computes the pattern cell coordinates centered in the maze and adjusts
+        placement if any cell overlaps with the entry or exit. Raises
+        MazeTooSmallError if no valid position can be found.
+
+        Parameters
+        ----------
+        offseth : int, optional
+            Vertical offset applied to the pattern center, by default 0.
+        offsetw : int, optional
+            Horizontal offset applied to the pattern center, by default 0.
+        direction : int, optional
+            Tracks the last shift direction to avoid infinite recursion, by default 0.
+
+        Raises
+        ------
+        MazeTooSmallError
+            If the maze is too small or no valid pattern placement exists.
+        """        
         if self.width <= 10 >= self.height:
             raise MazeTooSmallError("Maze's size is too small "
                                     "for displaying the 42 "
@@ -88,7 +152,24 @@ class MazeGenerator:
     def _narrow_corridor(self, position: Tuple[int, int],
                          options:
                          List[Tuple[int, int]]) -> List[Tuple[int, int]]:
-        """Ensure corridors remain single-cell wide."""
+        """Filter out neighbors that would produce corridors wider than one cell.
+
+        Checks whether the current cell is already part of a horizontal or vertical
+        corridor and removes candidates with the same orientation, preventing two
+        parallel open passages from being merged into a wide corridor.
+
+        Parameters
+        ----------
+        position : Tuple[int, int]
+            (x, y) coordinates of the current cell.
+        options : List[Tuple[int, int]]
+            Candidate neighbor cells to move to.
+
+        Returns
+        -------
+        List[Tuple[int, int]]
+            Filtered list of neighbors that do not produce wide corridors.
+        """
         try:
             xp, yp = position
             lateral: bool = ((self.maze[yp][xp] & 0x2 == 0)
@@ -119,7 +200,25 @@ class MazeGenerator:
 
     def _isvalid(self, position: Tuple[int, int],
                  flag: int = 0) -> List[Tuple[int, int]]:
-        """Return valid neighbor cells for the given position."""
+        """Return the valid neighbors of a cell based on the current generation phase.
+
+        When flag is 0, returns only unvisited neighbors (value 0xf). When flag
+        is non-zero, returns neighbors that are not part of the 42 pattern. Results
+        are passed through _narrow_corridor to avoid wide corridors.
+
+        Parameters
+        ----------
+        position : Tuple[int, int]
+            (x, y) coordinates of the current cell.
+        flag : int, optional
+            Controls the neighbor filter: 0 for unvisited cells only,
+            non-zero to exclude pattern cells, by default 0.
+
+        Returns
+        -------
+        List[Tuple[int, int]]
+            List of valid neighbor coordinates.
+        """
         x, y = position
         options: List[Tuple[int, int]] = []
         condition: Callable = lambda cell: cell != 42 if flag else cell == 0xf
@@ -139,7 +238,23 @@ class MazeGenerator:
 
     def _opening_walls(self, current: Tuple[int, int],
                        next: Tuple[int, int]) -> None:
-        """Open the walls between two adjacent cells."""
+        """Open the shared wall between two adjacent cells.
+
+        Clears the appropriate wall bits in both cells depending on their
+        relative positions (horizontal or vertical neighbors).
+
+        Parameters
+        ----------
+        current : Tuple[int, int]
+            (x, y) coordinates of the current cell.
+        next : Tuple[int, int]
+            (x, y) coordinates of the neighboring cell.
+
+        Raises
+        ------
+        ValueError
+            If either current or next is an empty tuple.
+        """            
         if len(current) == 0 or len(next) == 0:
             raise ValueError(
                 "You're passing empty arfuments to _opening_walls function")
@@ -161,7 +276,19 @@ class MazeGenerator:
             self.maze[cy][cx] &= ~0x8
 
     def _dfs(self) -> None:
-        """Build maze paths using randomized depth-first search."""
+        """Carve passages through the maze using a depth-first search algorithm.
+
+        Performs one or two passes depending on whether the maze is perfect or
+        imperfect. In the first pass, walls are opened along the DFS path. In
+        the second pass (imperfect only), additional connections are made at
+        a reduced frequency to introduce loops. After generation, any remaining
+        fully-walled cells are forcibly opened, and the 42 pattern cells are restored.
+
+        Raises
+        ------
+        MazeNotExistsError
+            If the maze grid has not been initialized before calling this method.
+        """
         if len(self.maze) == 0:
             raise MazeNotExistsError(
                 "You cannot creat a maze with dimensions 0x0")
@@ -227,7 +354,17 @@ class MazeGenerator:
             self.maze[coordinate[0]][coordinate[1]] = 0xf
 
     def _bfs(self) -> List[Tuple[int, int]]:
-        """Return the shortest path from entry to exit."""
+        """Find the shortest path from entry to exit using breadth-first search.
+
+        Traverses the maze respecting wall bits to determine which neighbors
+        are reachable, then reconstructs the path by backtracking through
+        a parent map.
+
+        Returns
+        -------
+        List[Tuple[int, int]]
+            Ordered list of (x, y) coordinates from entry to exit.
+        """
         try:
             fifo: deque = deque()
             visited: set[Tuple[int, int]] = set()
@@ -278,7 +415,13 @@ class MazeGenerator:
             return path
 
     def _wilson(self) -> None:
-        """Build maze paths using Wilson's loop-erased random walk."""
+        """Carve passages through the maze using Wilson's algorithm.
+
+        Performs a loop-erased random walk from unvisited cells until all cells
+        are connected. For imperfect mazes, a second path is started from the
+        entry to introduce an additional route. After generation, the 42 pattern
+        cells are restored.
+        """
         if self.seed:
             random.seed(self.seed)
         fifteen: List[Tuple[int, int]] = []
@@ -337,8 +480,13 @@ class MazeGenerator:
         for coordinate in self.pattern:
             self.maze[coordinate[0]][coordinate[1]] = 0xf
 
-    def _complying(self) -> None:
-        """Validate maze connectivity and whether it is perfect."""
+    def     complying(self) -> None:
+        """Validate maze connectivity and whether it satisfies the perfect condition.
+
+        Performs a BFS from the entry to count visited cells and edges, then
+        prints whether the maze is fully connected and whether the edge count
+        matches the expected value for a perfect maze.
+        """
         fifo: deque = deque()
         visited: set[Tuple[int, int]] = set()
         fifo.append(self.entry)
@@ -379,7 +527,12 @@ class MazeGenerator:
         print(f"Comply = {self.perfect == (e == v)}")
 
     def generate(self) -> None:
-        """Generate the maze and compute the solution."""
+        """Initialize the maze grid and run the full generation pipeline.
+
+        Fills the grid with fully-walled cells, places the 42 pattern, runs
+        either DFS or Wilson's algorithm to carve passages, and computes the
+        solution path via BFS.
+        """
         self.maze = [[0xf for _ in range(self.width)]
                      for _ in range(self.height)]
         try:

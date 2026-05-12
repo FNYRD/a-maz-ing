@@ -10,7 +10,7 @@ authors = [
     {name = "Jesus Rosales",email = "jr.jobs.1509@gmail.com"},
     {name = "Sergio Gabriel Lenti",email = "slenti@student.42porto.com"}
 ]
-readme = "README.md"
+readme = "mazegen/README.md"
 requires-python = ">=3.10"
 dependencies = []
 
