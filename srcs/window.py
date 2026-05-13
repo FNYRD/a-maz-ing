@@ -40,8 +40,8 @@ class MazeWindow():
                 and config["height"] < config["width"]):
             self.cell_size = 140 // config["height"]
         self.wall_size: int = 4
-        self.path_visible = False
-        self.menu_visible = False
+        self.path_visible: int = 0
+        self.menu_visible: bool = False
         self.instructions: List[str] = [
             "(c) color", "(s) solution", "(f) pattern", "(g) regen", "(q) quit"
         ]
@@ -239,8 +239,11 @@ class MazeWindow():
         self.draw_single_block(maze.exit, 0xffff0000)
 
         # Draw solution path:
-        if self.path_visible:
-            self.draw_path(maze.start, maze.path, 0xff888888)
+        if self.path_visible > 0:
+            self.draw_path(
+                    maze.start, maze.path[:self.path_visible], 0xff888888)
+            if self.path_visible < len(maze.path):
+                self.path_visible += 1
 
         # Write instructions for user interaction:
         self.draw_instructions(maze.width, maze.height)
@@ -272,10 +275,12 @@ class MazeWindow():
                 self._m.mlx_destroy_window(self._ptr, self._win)
                 self._m.mlx_release(self._ptr)
 
-            # 'Esc' to hide menu:
+            # 'Esc' to hide menu / skip path animation:
             if keynum in [65307, 115, 99, 102, 103]:
                 if self.menu_visible:
                     self.menu_visible = False
+                elif self.path_visible > 0:
+                    self.path_visible = len(self.maze.path)
 
             # 'm' to show menu:
             if keynum == 109:
@@ -285,14 +290,10 @@ class MazeWindow():
 
             # 's' to show/hide solution path:
             if keynum == 115:
-                if self.path_visible:
-                    self.draw_path(
-                        self.maze.start, self.maze.path, self.bg_color)
-                    self.path_visible = False
+                if self.path_visible > 0:
+                    self.path_visible = 0
                 else:
-                    self.draw_path(
-                        self.maze.start, self.maze.path, 0xff888888)
-                    self.path_visible = True
+                    self.path_visible = 2
 
             # 'c' to change walls color:
             if keynum == 99:
