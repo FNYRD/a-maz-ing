@@ -1,21 +1,15 @@
 install:
-	python3 -m venv .venv
-	source ./venv/bin/activate
-	pip3 install --upgrade pip setuptools wheel
-	pip3 install -r requirements.txt
-	python3 -m build --wheel --outdir .
-	pip3 install mazegen-*.whl
-	deactivate
+	python3 -m venv venv
+	venv/bin/pip install --upgrade pip
+	venv/bin/pip install -r requirements.txt
+	venv/bin/python -m build --wheel --outdir .
+	venv/bin/pip install mazegen-*.whl
 
 run:
-	source ./venv/bin/activate
-	python3 a_maze_ing.py config.txt
-	deactivate
+	venv/bin/python a_maze_ing.py config.txt
 
 debug:
-	source ./venv/bin/activate
-	python3 -m pdb a_maze_ing.py config.txt
-	deactivate
+	venv/bin/python -m pdb a_maze_ing.py config.txt
 
 clean:
 	find . -type d -name __pycache__ -exec rm -rf {} +
@@ -25,21 +19,17 @@ clean:
 	find . -type d -name build -exec rm -rf {} +
 
 lint:
-	source ./venv/bin/activate
-	flake8 --exclude=.venv,mlx,build --filename='*.py' .
-	mypy --warn-return-any \
+	venv/bin/flake8 --exclude=.venv,mlx,build --filename='*.py' .
+	venv/bin/mypy --warn-return-any \
 		 --warn-unused-ignores \
 		 --ignore-missing-imports \
 		 --disallow-untyped-defs \
 		 --check-untyped-defs \
 		 --exclude '^(venv|\.venv|env|mlx|build)/' .
-	deactivate
 
 lint-strict:
-	source ./venv/bin/activate
-	flake8 --exclude=.venv,mlx,build --filename='*.py' .
-	mypy  --strict \
+	venv/bin/flake8 --exclude=.venv,mlx,build --filename='*.py' .
+	venv/bin/mypy --strict \
 		--exclude '^(venv|\.venv|env|mlx|build)/' .
-	deactivate
 
 .PHONY: install run debug clean lint lint-strict
