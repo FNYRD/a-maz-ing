@@ -35,11 +35,11 @@ class MazeWindow():
         self.hl_color: int = Color.HL
         self.margin: int = 10
         self.cell_size: int = 20
-        if self.cell_size * config["width"] < 140:
-            self.cell_size = 140 // config["width"]
-        if (self.cell_size * config["height"] < 140
+        if self.cell_size * config["width"] < 160:
+            self.cell_size = 160 // config["width"]
+        if (self.cell_size * config["height"] < 160
                 and config["height"] < config["width"]):
-            self.cell_size = 140 // config["height"]
+            self.cell_size = 160 // config["height"]
         self.wall_size: int = 4
         self.path_visible: int = 0
         self.path_animated: bool = True
@@ -48,7 +48,8 @@ class MazeWindow():
         self.win_time: float = 2.0
         self.playing: Tuple[int, int] | None = None
         self.instructions: List[str] = [
-            "(c) color", "(s) solution", "(f) pattern", "(g) regen", "(q) quit"
+            "(c) color", "(s) solution", "(f) pattern",
+            "(p) play", "(g) regen", "(q) quit"
         ]
         self._generator.generate()
         self.maze: Maze = Maze(
@@ -95,8 +96,8 @@ class MazeWindow():
         if self.playing == self.maze.exit:
             self.draw_maze(self.maze)
             self.draw_single_block(self.maze.exit, Color.WHITE)
-            self.win = True
             self.hl_color = Color.get_random_color()
+            self.win = True
             self.playing = None
 
     def paint_bg(self, width: int, height: int,
@@ -240,7 +241,6 @@ class MazeWindow():
 
     def show_menu(self) -> None:
         """Paint a transparence layer on top of the maze for menu writting."""
-
         self.paint_bg(self.maze.width, self.maze.height, 0xCC000000)
         self.draw_instructions(self.maze.width, self.maze.height)
 
@@ -349,6 +349,7 @@ class MazeWindow():
                 if not self.menu_visible:
                     self.menu_visible = True
                     self.show_menu()
+                    time.sleep(0.01)
 
             # 's' to show/hide solution path:
             if keynum == 115 and not self.win:
