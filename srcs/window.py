@@ -83,15 +83,21 @@ class MazeWindow():
         if not self.playing:
             return
         x, y = self.playing
-        if step == "N":
+        if step == "N" and not self.maze.rows[y][x] & 0b0001:
             y -= 1
-        elif step == "E":
+        elif step == "E" and not self.maze.rows[y][x] & 0b0010:
             x += 1
-        elif step == "S":
+        elif step == "S" and not self.maze.rows[y][x] & 0b0100:
             y += 1
-        elif step == "W":
+        elif step == "W" and not self.maze.rows[y][x] & 0b1000:
             x -= 1
         self.playing = (x, y)
+        if self.playing == self.maze.exit:
+            self.draw_maze(self.maze)
+            self.draw_single_block(self.maze.exit, Color.WHITE)
+            self.win = True
+            self.hl_color = Color.get_random_color()
+            self.playing = None
 
     def paint_bg(self, width: int, height: int,
                  color: int = 0) -> None:
@@ -262,8 +268,8 @@ class MazeWindow():
         if self.win:
             time.sleep(self.win_time)
             self.win_time = 0.0
-            self.bg_color = 0x11000000
-            self.fg_color = 0x11000000
+            self.bg_color = Color.BLACK
+            self.fg_color = Color.BLACK
             return
 
         # Draw start and exit:
@@ -320,10 +326,12 @@ class MazeWindow():
                 self._m.mlx_release(self._ptr)
 
             # 'Esc' to hide menu / skip path animation:
-            if keynum in [65307, 115, 99, 102, 103]:
+            if keynum in [65307, 115, 99, 102, 103, 112] and self.menu_visible:
                 if self.menu_visible:
                     self.menu_visible = False
-                elif self.win:
+
+            elif keynum == 65307 or keynum == 103 and not self.menu_visible:
+                if self.win:
                     self.win = False
                     self.win_time = 2.0
                     self.hl_color = Color.HL
@@ -337,13 +345,13 @@ class MazeWindow():
                     self.playing = None
 
             # 'm' to show menu:
-            if keynum == 109:
+            if keynum == 109 and not self.win:
                 if not self.menu_visible:
                     self.menu_visible = True
                     self.show_menu()
 
             # 's' to show/hide solution path:
-            if keynum == 115:
+            if keynum == 115 and not self.win:
                 if self.path_visible > 0:
                     self.path_visible = 0
                 else:
@@ -353,11 +361,11 @@ class MazeWindow():
                         self.path_visible = len(self.maze.path)
 
             # 'c' to change walls color:
-            if keynum == 99:
+            if keynum == 99 and not self.win:
                 self.fg_color = Color.get_random_color()
 
             # 'f' to change pattern color:
-            if keynum == 102:
+            if keynum == 102 and not self.win:
                 if self.hl_color == Color.HL:
                     self.hl_color = Color.get_random_color()
                 else:
@@ -368,20 +376,22 @@ class MazeWindow():
                 self.generate()
                 self.playing = None
                 self.path_animated = True
+                self.hl_color = Color.HL
 
             # 'p' to play:
-            if keynum == 112:
+            if keynum == 112 and not self.win:
                 self.playing = self.maze.start
 
             # move player:
-            if keynum == 97:
-                self.move_player('W')
-            if keynum == 100:
-                self.move_player('E')
-            if keynum == 119:
-                self.move_player('N')
-            if keynum == 120:
-                self.move_player('S')
+            if self.playing and not self.menu_visible:
+                if keynum == 65361:
+                    self.move_player('W')
+                if keynum == 65362:
+                    self.move_player('N')
+                if keynum == 65363:
+                    self.move_player('E')
+                if keynum == 65364:
+                    self.move_player('S')
 
         def close_window(stuff: Any) -> None:
             """Respone for ClientMessage event (WM_DELETE_WINDOW)."""
