@@ -80,6 +80,8 @@ class MazeWindow():
         return path
 
     def move_player(self, step: str) -> None:
+        if not self.playing:
+            return
         x, y = self.playing
         if step == "N":
             y -= 1
@@ -90,7 +92,6 @@ class MazeWindow():
         elif step == "W":
             x -= 1
         self.playing = (x, y)
-
 
     def paint_bg(self, width: int, height: int,
                  color: int = 0) -> None:
@@ -272,7 +273,8 @@ class MazeWindow():
         # Draw solution path:
         if self.path_visible > 0:
             if self.path_visible == len(maze.path):
-                self.draw_path(maze.start, maze.path[:self.path_visible], Color.GREEN)
+                self.draw_path(
+                    maze.start, maze.path[:self.path_visible], Color.GREEN)
                 if self.path_animated:
                     self.hl_color = Color.get_random_color()
                     self.win = True
@@ -284,7 +286,8 @@ class MazeWindow():
 
         # Player position:
         if self.playing:
-            self.draw_single_block(self.playing, Color.WHITE)
+            self.draw_single_block(
+                    self.playing, Color.WHITE)
 
         # Write instructions for user interaction:
         self.draw_instructions(maze.width, maze.height)
