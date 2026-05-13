@@ -1,3 +1,0 @@
-mazegen
-srcs
-venv
