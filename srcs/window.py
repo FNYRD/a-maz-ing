@@ -3,6 +3,7 @@ from .maze import Maze
 from .color import Color
 from mazegen import MazeGenerator
 import sys
+import time
 try:
     from mlx import Mlx
 except ImportError as e:
@@ -41,8 +42,11 @@ class MazeWindow():
             self.cell_size = 140 // config["height"]
         self.wall_size: int = 4
         self.path_visible: int = 0
+        self.path_animated: bool = True
         self.menu_visible: bool = False
-        self.playing: Tuple(int, int) | None = None
+        self.win: bool = False
+        self.win_time: float = 2.0
+        self.playing: Tuple[int, int] | None = None
         self.instructions: List[str] = [
             "(c) color", "(s) solution", "(f) pattern", "(g) regen", "(q) quit"
         ]
@@ -75,8 +79,18 @@ class MazeWindow():
                 path += "S"
         return path
 
-    def move_player(self, direction: str) -> None:
-        pass
+    def move_player(self, step: str) -> None:
+        x, y = self.playing
+        if step == "N":
+            y -= 1
+        elif step == "E":
+            x += 1
+        elif step == "S":
+            y += 1
+        elif step == "W":
+            x -= 1
+        self.playing = (x, y)
+
 
     def paint_bg(self, width: int, height: int,
                  color: int = 0) -> None:
@@ -244,16 +258,29 @@ class MazeWindow():
         self.paint_bg(maze.width, maze.height)
         self.draw_maze_walls(maze.width, maze.height, maze.rows)
 
+        if self.win:
+            time.sleep(self.win_time)
+            self.win_time = 0.0
+            self.bg_color = 0x11000000
+            self.fg_color = 0x11000000
+            return
+
         # Draw start and exit:
         self.draw_single_block(maze.start, Color.GREEN)
         self.draw_single_block(maze.exit, Color.RED)
 
         # Draw solution path:
         if self.path_visible > 0:
-            self.draw_path(
-                    maze.start, maze.path[:self.path_visible], Color.PATH)
-            if self.path_visible < len(maze.path):
-                self.path_visible += 1
+            if self.path_visible == len(maze.path):
+                self.draw_path(maze.start, maze.path[:self.path_visible], Color.GREEN)
+                if self.path_animated:
+                    self.hl_color = Color.get_random_color()
+                    self.win = True
+            else:
+                self.draw_path(maze.start, maze.path[:self.path_visible],
+                               Color.get_random_color())
+                if self.path_visible < len(maze.path):
+                    self.path_visible += 1
 
         # Player position:
         if self.playing:
@@ -293,6 +320,14 @@ class MazeWindow():
             if keynum in [65307, 115, 99, 102, 103]:
                 if self.menu_visible:
                     self.menu_visible = False
+                elif self.win:
+                    self.win = False
+                    self.win_time = 2.0
+                    self.hl_color = Color.HL
+                    self.fg_color = Color.WALL
+                    self.bg_color = Color.BG
+                    self.path_visible = 0
+                    self.path_animated = False
                 elif self.path_visible > 0:
                     self.path_visible = len(self.maze.path)
                 elif self.playing:
@@ -309,7 +344,10 @@ class MazeWindow():
                 if self.path_visible > 0:
                     self.path_visible = 0
                 else:
-                    self.path_visible = 2
+                    if self.path_animated:
+                        self.path_visible = 2
+                    else:
+                        self.path_visible = len(self.maze.path)
 
             # 'c' to change walls color:
             if keynum == 99:
@@ -326,6 +364,7 @@ class MazeWindow():
             if keynum == 103:
                 self.generate()
                 self.playing = None
+                self.path_animated = True
 
             # 'p' to play:
             if keynum == 112:
