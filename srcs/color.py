@@ -34,13 +34,19 @@ class Color(IntEnum):
     TEAL = 0xFF0d5f5f
 
     # Basic
-    RED = 0xFF0000FF
+    RED = 0xFFFF0000
     GREEN = 0xFF00FF00
-    BLUE = 0xFFFF0000
+    BLUE = 0xFF0000FF
     BLACK = 0xFF000000
+    WHITE = 0xFFFFFFFF
+
+    # Default
+    BG = 0xff113355
+    WALL = 0xeeeeeeff
+    HL = 0xFF00FFFF
+    PATH = 0xff888888
 
     @classmethod
     def get_random_color(cls) -> int:
         """method that returns a random color from the class"""
-
-        return random.choice(list(Color))
+        return random.choice(list(Color)[:-4])

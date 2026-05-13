@@ -29,9 +29,9 @@ class MazeWindow():
         self._m = Mlx()
         self._ptr = self._m.mlx_init()
         self._win = None
-        self.fg_color: int = 0xeeeeeeff
-        self.bg_color: int = 0xff113355
-        self.hl_color: int = 0xff00ffff
+        self.fg_color: int = Color.WALL
+        self.bg_color: int = Color.BG
+        self.hl_color: int = Color.HL
         self.margin: int = 10
         self.cell_size: int = 20
         if self.cell_size * config["width"] < 140:
@@ -42,6 +42,7 @@ class MazeWindow():
         self.wall_size: int = 4
         self.path_visible: int = 0
         self.menu_visible: bool = False
+        self.playing: Tuple(int, int) | None = None
         self.instructions: List[str] = [
             "(c) color", "(s) solution", "(f) pattern", "(g) regen", "(q) quit"
         ]
@@ -73,6 +74,9 @@ class MazeWindow():
             elif a[1] < b[1]:
                 path += "S"
         return path
+
+    def move_player(self, direction: str) -> None:
+        pass
 
     def paint_bg(self, width: int, height: int,
                  color: int = 0) -> None:
@@ -227,6 +231,12 @@ class MazeWindow():
         if self.menu_visible:
             return
 
+        if self.hl_color != Color.HL:
+            if self.hl_color != Color.BG:
+                self.hl_color = Color.get_random_color()
+            else:
+                self.hl_color = Color.BG
+
         # Clear window:
         self._m.mlx_clear_window(self._ptr, self._win)
 
@@ -235,15 +245,19 @@ class MazeWindow():
         self.draw_maze_walls(maze.width, maze.height, maze.rows)
 
         # Draw start and exit:
-        self.draw_single_block(maze.start, 0xff00ff00)
-        self.draw_single_block(maze.exit, 0xffff0000)
+        self.draw_single_block(maze.start, Color.GREEN)
+        self.draw_single_block(maze.exit, Color.RED)
 
         # Draw solution path:
         if self.path_visible > 0:
             self.draw_path(
-                    maze.start, maze.path[:self.path_visible], 0xff888888)
+                    maze.start, maze.path[:self.path_visible], Color.PATH)
             if self.path_visible < len(maze.path):
                 self.path_visible += 1
+
+        # Player position:
+        if self.playing:
+            self.draw_single_block(self.playing, Color.WHITE)
 
         # Write instructions for user interaction:
         self.draw_instructions(maze.width, maze.height)
@@ -281,6 +295,8 @@ class MazeWindow():
                     self.menu_visible = False
                 elif self.path_visible > 0:
                     self.path_visible = len(self.maze.path)
+                elif self.playing:
+                    self.playing = None
 
             # 'm' to show menu:
             if keynum == 109:
@@ -301,11 +317,29 @@ class MazeWindow():
 
             # 'f' to change pattern color:
             if keynum == 102:
-                self.hl_color = Color.get_random_color()
+                if self.hl_color == Color.HL:
+                    self.hl_color = Color.get_random_color()
+                else:
+                    self.hl_color = Color.HL
 
             # 'g' to regenerate:
             if keynum == 103:
                 self.generate()
+                self.playing = None
+
+            # 'p' to play:
+            if keynum == 112:
+                self.playing = self.maze.start
+
+            # move player:
+            if keynum == 97:
+                self.move_player('W')
+            if keynum == 100:
+                self.move_player('E')
+            if keynum == 119:
+                self.move_player('N')
+            if keynum == 120:
+                self.move_player('S')
 
         def close_window(stuff: Any) -> None:
             """Respone for ClientMessage event (WM_DELETE_WINDOW)."""
