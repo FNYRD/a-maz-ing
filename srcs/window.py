@@ -19,6 +19,41 @@ class MazeWindow():
     It istantiates the MazeGenerator, a Maze to contain its data
     and a minilibx window to visually represent them in an
     interactive way.
+
+    generator: MazeGenerator
+        instance of MazeGenertor to create new mazes on request.
+    m: int
+        instance of minilibx graphic library for maze display.
+    ptr: int
+        display connection with mlx identifier.
+    win: int, None
+        mlx window identifier.
+    fg_color: int
+        default foreground (walls) color.
+    bg_color: int
+        default background (space between walls) color.
+    hl_color: int
+        default highlight (42 pattern) color.
+    margin: int
+        pixels between window edge and maze border.
+    cell_size: int
+        cell width/height in pixels.
+    wall_size: int
+        wall width in pixels.
+    path_visible: int
+        number of visible cells for the solution path.
+    path_animated: bool
+        if True, the path will be shown as an animation.
+    menu_visible: bool
+        if True, the menu will be displayed on top of the maze.
+    win:
+        if True, the victory animation will be displayed.
+    win_time: float
+        delay before starting window animation.
+    playing: Tuple[int, int], None
+        if None, not in play mode. Otherwise, player position as (x,y) coords.
+    instructions: Lst[str]
+        list of user interaction instructions.
     """
 
     def __init__(self, config: Dict[str, Any]):
@@ -27,9 +62,9 @@ class MazeWindow():
         config: dictionary with configuration parameter.
         """
         self._generator: MazeGenerator = MazeGenerator(**config)
-        self._m = Mlx()
-        self._ptr = self._m.mlx_init()
-        self._win = None
+        self._m: Mlx = Mlx()
+        self._ptr: int = self._m.mlx_init()
+        self._win: int | None = None
         self.fg_color: int = Color.WALL
         self.bg_color: int = Color.BG
         self.hl_color: int = Color.HL
@@ -48,8 +83,8 @@ class MazeWindow():
         self.win_time: float = 2.0
         self.playing: Tuple[int, int] | None = None
         self.instructions: List[str] = [
-            "(c) color", "(s) solution", "(f) pattern",
-            "(p) play", "(g) regen", "(q) quit"
+            "(c)   color", "(s)   solution", "(f)   pattern",
+            "(p)   play", "(a|g) regen", "(q)   quit"
         ]
         self._generator.generate()
         self.maze: Maze = Maze(
@@ -81,6 +116,10 @@ class MazeWindow():
         return path
 
     def move_player(self, step: str) -> None:
+        """Move the player position (self.playing) one step.
+
+        step: single char string with a cardinal direction (NEWS) to move.
+        """
         if not self.playing:
             return
         x, y = self.playing
@@ -326,11 +365,11 @@ class MazeWindow():
                 self._m.mlx_release(self._ptr)
 
             # 'Esc' to hide menu / skip path animation:
-            if keynum in [65307, 115, 99, 102, 103, 112] and self.menu_visible:
-                if self.menu_visible:
-                    self.menu_visible = False
+            if (keynum in [65307, 115, 99, 102, 103, 112, 97]
+                    and self.menu_visible):
+                self.menu_visible = False
 
-            elif keynum == 65307 or keynum == 103 and not self.menu_visible:
+            elif keynum in [65307, 103, 97] and not self.menu_visible:
                 if self.win:
                     self.win = False
                     self.win_time = 2.0
@@ -372,11 +411,19 @@ class MazeWindow():
                 else:
                     self.hl_color = Color.HL
 
+            # 'a' to alternate algorithms:
+            if keynum == 97:
+                if self._generator.alt_algorithm is True:
+                    self._generator.alt_algorithm = False
+                else:
+                    self._generator.alt_algorithm = True
+
             # 'g' to regenerate:
-            if keynum == 103:
+            if keynum == 103 or keynum == 97:
                 self.generate()
                 self.playing = None
                 self.path_animated = True
+                self.path_visible = 0
                 self.hl_color = Color.HL
 
             # 'p' to play:
