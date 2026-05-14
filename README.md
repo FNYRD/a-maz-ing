@@ -28,7 +28,7 @@ loop-erased random walks to produce a more uniform distribution of maze shapes, 
 cost of being slower on larger grids.
 
 Both algorithms support two modes:
-- **Perfect** (`PERFECT=True`): exactly one path between antry and exit cells.
+- **Perfect** (`PERFECT=True`): exactly one path between entry and exit cells.
 - **Imperfect** (`PERFECT=False`): extra connections are added, creating loops and
   multiple paths between entry and exit cells.
 
@@ -56,7 +56,7 @@ events for real-time interaction. For this reason, the project runs on **Linux o
 - Python ≥ 3.10
 - pip
 - X11 (pre-installed on most Linux distributions)
-- `mlx-2.2-py3-ubuntu-any.whl` — must be present at the root of the project
+- `mlx-2.2-py3-none-any.whl` — must be present at the root of the project
 
 ### Configuration file
 
