@@ -300,8 +300,11 @@ class MazeWindow():
         # Clear window:
         self._m.mlx_clear_window(self._ptr, self._win)
 
+        # Paint bg if not too big (it slows down the rendering):
+        if maze.width < 25 and maze.height < 25:
+            self.paint_bg(maze.width, maze.height)
+
         # Draw the maze:
-        self.paint_bg(maze.width, maze.height)
         self.draw_maze_walls(maze.width, maze.height, maze.rows)
 
         if self.win:

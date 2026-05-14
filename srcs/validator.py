@@ -90,8 +90,8 @@ class Validator():
                 output_data[key.lower()] = int(input_data[key])
                 if output_data[key.lower()] < 2:
                     raise ValueError(f"Minimal {key} value: 2")
-                if output_data[key.lower()] > 50:
-                    raise ValueError(f"Maximun {key} value: 50")
+                if output_data[key.lower()] > 40:
+                    raise ValueError(f"Maximun {key} value: 40")
             except ValueError as e:
                 raise ValueError(f"Wrong {key} value ({e})")
 
