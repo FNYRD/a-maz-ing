@@ -71,12 +71,18 @@ class Validator():
 
         required: List[str] = ["WIDTH", "HEIGHT", "ENTRY",
                                "EXIT", "OUTPUT_FILE", "PERFECT"]
+        optional: List[str] = ["SEED", "ALT_ALGORITHM"]
         output_data: Dict[str, Any] = {}
 
         # Verifying all requiered keys are present
         for key in required:
             if key not in input_data.keys():
                 raise KeyError(f"Missing requiered configuration value {key}")
+
+        # check that all keys are valid:
+        for key in input_data.keys():
+            if key not in required and key not in optional:
+                raise KeyError(f"Invalid configuration parameter '{key}'")
 
         # check if width and heigth are valid:
         for key in required[0:2]:
@@ -112,6 +118,8 @@ class Validator():
             raise ValueError("Wrong output filename (too long!)")
 
         # check for valid boolen values for PERFECT/ALT_ALGORITHM key:
+        if not "ALT_ALGORITHM" in input_data.keys():
+            input_data["ALT_ALGORITHM"] = "FALSE"
         for key in ["PERFECT", "ALT_ALGORITHM"]:
             if key in input_data:
                 if input_data[key].upper() == "TRUE":
@@ -123,7 +131,9 @@ class Validator():
                             f"{key} only accepts boolean values (TRUE/FALSE)")
 
         # verifies if seed is an int:
-        if input_data["SEED"]:
+        if not "SEED" in input_data.keys():
+            output_data["seed"] = 0
+        else:
             try:
                 output_data["seed"] = int(input_data["SEED"])
             except ValueError as e:
