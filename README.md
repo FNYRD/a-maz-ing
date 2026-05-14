@@ -129,14 +129,17 @@ Once the window is open, the following keys are available:
 |-----|--------|
 | `s` | Show / hide solution path |
 | `c` | Randomize wall color |
-| `f` | Randomize "42 pattern" highlight color |
+| `f` | "42 pattern" highlight color animation |
 | `g` | Regenerate maze (new random maze, same config) |
-| `m` | Toggle instructions menu |
-| `q` | Quit |
+| `a` | Switch algorithm and regenerate the maze
+| `p` | Player mode (use arrow keys to explore the maze) |
+| `m` | Show instructions menu |
+| `Esc` | Exit the menu / Escape path animation / Exit win screen |
+| `q` | Exit the program |
 
 ### Output file
 
-After closing the window, the maze is saved to the file defined in `OUTPUT_FILE`.
+After closing the window, the current maze is saved to the file defined in `OUTPUT_FILE`.
 Format:
 
 ```
@@ -156,14 +159,20 @@ encoded as a string of cardinal directions (`N`, `E`, `S`, `W`) from entry to ex
 Clone the repository and run:
 
 ```bash
+make build
+```
+To build `mazegen` package.  
+  
+Once it's created, run:
+
+```bash
 make install
 ```
-
 This will:
-1. Upgrade pip
+1. Create a virtual environment and upgrade pip
 2. Install Python dependencies from `requirements.txt`, including the MinilibX library
-   from the local wheel file (`mlx-2.2-py3-ubuntu-any.whl`)
-3. Build and install the `mazegen` package locally
+   from the local wheel file (`mlx-2.2-py3-none-any.whl`)
+3. Install the `mazegen` package locally
 
 ### Running the program
 
@@ -171,10 +180,17 @@ This will:
 make run
 ```
 
-Or manually:
+Or manually (by entering the virtual environment and running the main script directly):
 
 ```bash
+source .venv/bin/activate
 python3 a_maze_ing.py config.txt
+```
+
+Once done, exit the vitual environment with:
+
+```bash
+deactivate
 ```
 
 ---
