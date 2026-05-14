@@ -37,5 +37,5 @@ lint-strict:
 	./.venv/bin/mypy --strict \
 		--exclude '^(venv|\.venv|env|mlx|build)/' .
 
-.PHONY: install run debug clean lint lint-strict
+.PHONY: build install run debug clean lint lint-strict
 .SILENT:

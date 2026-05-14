@@ -118,7 +118,7 @@ class Validator():
             raise ValueError("Wrong output filename (too long!)")
 
         # check for valid boolen values for PERFECT/ALT_ALGORITHM key:
-        if not "ALT_ALGORITHM" in input_data.keys():
+        if "ALT_ALGORITHM" not in input_data.keys():
             input_data["ALT_ALGORITHM"] = "FALSE"
         for key in ["PERFECT", "ALT_ALGORITHM"]:
             if key in input_data:
@@ -131,7 +131,7 @@ class Validator():
                             f"{key} only accepts boolean values (TRUE/FALSE)")
 
         # verifies if seed is an int:
-        if not "SEED" in input_data.keys():
+        if "SEED" not in input_data.keys():
             output_data["seed"] = 0
         else:
             try:
