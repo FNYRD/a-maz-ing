@@ -128,3 +128,51 @@ for step in solution:
     x, y = step
     print(f"→ ({x}, {y})")
 ```
+
+---
+
+## Verification
+
+`gen.complying()` validates structural properties of the generated maze. It does not return a value — it prints three diagnostics to stdout.
+
+```python
+gen.generate()
+gen.complying()
+```
+
+**Example output:**
+```
+Conexo = True
+Perfect Argument = True
+Perfect validator = True
+Comply = True
+```
+
+### What it checks
+
+The method runs a BFS from the entry cell and collects two counts:
+
+| Symbol | Meaning |
+|--------|---------|
+| `v` | Number of reachable cells minus 1 (i.e. `visited − 1`) |
+| `e` | Number of undirected edges between reachable cells (each wall opening counted once) |
+
+Then it prints:
+
+| Line | Expression | Meaning |
+|------|-----------|---------|
+| `Conexo` | `v == (width × height) − 16` | Every non-pattern cell is reachable from entry |
+| `Perfect Argument` | value of `self.perfect` | The flag you passed at construction |
+| `Perfect validator` | `e == v` | Whether the edge count satisfies the spanning-tree condition |
+| `Comply` | `self.perfect == (e == v)` | Whether the maze behaves as declared |
+
+The 16 subtracted from the total cell count corresponds to the cells occupied by the embedded `42` pattern, which are permanently walled off (`0xf`) and intentionally excluded from connectivity.
+
+### Why `e == v` proves a perfect maze
+
+A perfect maze is, graph-theoretically, a **spanning tree** of the grid: every cell is reachable and there are no loops. A tree on *N* nodes has exactly *N − 1* edges. Here `v = visited − 1`, so the condition `e == v` is equivalent to asserting *edges = nodes − 1* — the defining property of a tree.
+
+If `e > v`, extra edges exist, meaning at least one loop is present → imperfect maze.  
+If `e < v`, some cells are unreachable → disconnected maze (a generation bug).
+
+`Comply = True` means the maze does what you asked: a perfect maze has no loops, an imperfect one has at least one.
