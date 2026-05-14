@@ -131,9 +131,7 @@ class Validator():
                             f"{key} only accepts boolean values (TRUE/FALSE)")
 
         # verifies if seed is an int:
-        if "SEED" not in input_data.keys():
-            output_data["seed"] = 0
-        else:
+        if "SEED" in input_data.keys():
             try:
                 output_data["seed"] = int(input_data["SEED"])
             except ValueError as e:

@@ -445,7 +445,7 @@ class MazeGenerator:
         additional route. After generation, the 42 pattern
         cells are restored.
         """
-        if self.seed:
+        if self.seed is not None:
             random.seed(self.seed)
         fifteen: List[Tuple[int, int]] = []
         fifteen = [(x, y) for y, fila in enumerate(self.maze)
