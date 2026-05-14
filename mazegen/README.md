@@ -71,7 +71,7 @@ gen.generate()
 ## Accessing the Generated Structure
 
 After calling `generate()`, the maze is stored in `gen.maze` as a 2D list of integers.
-Each cell is a hex value (`0x0`–`0xE`) where each bit encodes whether a wall is present:
+Each cell is a hex value (`0x0`–`0xF`) where each bit encodes whether a wall is present:
 
 | Bit | Hex mask | Wall |
 |-----|----------|------|
@@ -80,7 +80,9 @@ Each cell is a hex value (`0x0`–`0xE`) where each bit encodes whether a wall i
 | 2 | `0x4` | South |
 | 3 | `0x8` | West |
 
-A value of `0` means all walls are open; `0xF` means all walls are closed.
+A value of `0` means all walls are open; `0xF` means all walls are closed. 
+The `0xF` value is reserved to create a `42` shape design in the center of the maze (if its size allows it). 
+All the other cells have at least one open wall, in order to achieve full connectivity.  
 
 ```python
 from typing import List
